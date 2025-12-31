@@ -1,0 +1,237 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  --bg-primary: #FAF9EE;
+  --bg-secondary: #f0ede6;
+  --text-primary: #2d2d2d;
+  --text-muted: #a8a8a8;
+  --accent-today: #ffb5c5;
+  --day-past: #e8e5de;
+  --day-future: #d4d0c8;
+  --day-today: #ffe4ea;
+  --border: #c4c0b8;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Press Start 2P', cursive;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+#root {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.app {
+  max-width: 1200px;
+  width: 100%;
+}
+
+.app-container {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.left-section {
+  position: sticky;
+  top: 2rem;
+}
+
+.time-counter-wrapper {
+  background: var(--bg-secondary);
+  border: 4px solid var(--border);
+  padding: 2rem;
+}
+
+.counter-main {
+  text-align: center;
+  padding-bottom: 2rem;
+  border-bottom: 3px solid var(--border);
+  margin-bottom: 2rem;
+}
+
+.counter-number {
+  font-size: 4rem;
+  color: var(--accent-today);
+  margin-bottom: 1rem;
+  line-height: 1;
+}
+
+.counter-label {
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+}
+
+.time-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.stat-box {
+  text-align: center;
+  padding: 1rem;
+  background: var(--bg-primary);
+  border: 2px solid var(--border);
+}
+
+.stat-number {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.5rem;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+
+.month-grid {
+  background: var(--bg-secondary);
+  border: 4px solid var(--border);
+  padding: 2rem;
+}
+
+.month-title {
+  font-size: 1rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  letter-spacing: 1px;
+}
+
+.weekday-labels {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.weekday-label {
+  font-size: 0.5rem;
+  text-align: center;
+  color: var(--text-muted);
+  padding: 0.5rem 0;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+}
+
+.day-box {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--border);
+  font-size: 0.75rem;
+  transition: opacity 0.3s ease, transform 0.2s ease;
+}
+
+.day-box.past {
+  background: var(--day-past);
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.day-box.today {
+  background: var(--day-today);
+  color: var(--text-primary);
+  border-color: var(--accent-today);
+  border-width: 3px;
+  transform: scale(1.05);
+}
+
+.day-box.future {
+  background: var(--day-future);
+  color: var(--text-primary);
+}
+
+.day-box.placeholder {
+  border: none;
+  background: transparent;
+}
+
+@media (max-width: 640px) {
+  .app-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .left-section {
+    position: static;
+  }
+  
+  .counter-number {
+    font-size: 2.5rem;
+  }
+  
+  .counter-label {
+    font-size: 0.6rem;
+  }
+  
+  .stat-number {
+    font-size: 1.2rem;
+  }
+  
+  .stat-label {
+    font-size: 0.45rem;
+  }
+  
+  .time-counter-wrapper {
+    padding: 1.5rem;
+  }
+  
+  .month-title {
+    font-size: 0.8rem;
+  }
+  
+  .weekday-label {
+    font-size: 0.4rem;
+  }
+  
+  .day-box {
+    font-size: 0.6rem;
+  }
+  
+  .month-grid {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 1024px) and (min-width: 641px) {
+  .app-container {
+    grid-template-columns: 300px 1fr;
+    gap: 1.5rem;
+  }
+  
+  .time-counter-wrapper {
+    padding: 1.5rem;
+  }
+  
+  .counter-number {
+    font-size: 3rem;
+  }
+  
+  .stat-number {
+    font-size: 1.3rem;
+  }
+}
