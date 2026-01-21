@@ -1,0 +1,479 @@
+import express from 'express';
+import pg from 'pg';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+
+dotenv.config();
+
+const { Pool } = pg;
+const app = express();
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+pool.query('SELECT NOW()', (err, res) => {
+  if (err) {
+    console.error('❌ Database connection error:', err);
+  } else {
+    console.log('✅ Database connected successfully at:', res.rows[0].now);
+  }
+});
+
+app.use(cors());
+app.use(express.json());
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
+
+// Middleware to verify JWT token
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: 'Invalid or expired token' });
+    }
+    req.user = user;
+    next();
+  });
+};
+
+// Middleware to check if user is admin
+const isAdmin = (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+};
+
+// ==================== AUTH ROUTES ====================
+
+// Login
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    const result = await pool.query(
+      'SELECT id, username, email, full_name, role, employee_id, department, is_active FROM users WHERE username = $1 AND is_active = true',
+      [username]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const user = result.rows[0];
+
+    // For demo, accepting 'admin123' for all users
+    // In production, use: const validPassword = await bcrypt.compare(password, user.password_hash);
+    const validPassword = password === 'admin123';
+
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Update last login
+    await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
+
+    // Log activity
+    await pool.query(
+      'INSERT INTO activity_log (user_id, action_type, action_details) VALUES ($1, $2, $3)',
+      [user.id, 'login', `User ${user.username} logged in`]
+    );
+
+    const token = jwt.sign(
+      { id: user.id, username: user.username, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        fullName: user.full_name,
+        role: user.role,
+        employeeId: user.employee_id,
+        department: user.department
+      }
+    });
+
+    console.log(`✅ User ${user.username} logged in`);
+  } catch (error) {
+    console.error('❌ Login error:', error);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// Get current user info
+app.get('/api/auth/me', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, username, email, full_name, role, employee_id, department FROM users WHERE id = $1',
+      [req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = result.rows[0];
+    res.json({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      fullName: user.full_name,
+      role: user.role,
+      employeeId: user.employee_id,
+      department: user.department
+    });
+  } catch (error) {
+    console.error('❌ Error fetching user:', error);
+    res.status(500).json({ error: 'Failed to fetch user info' });
+  }
+});
+
+// ==================== EMPLOYEE ROUTES ====================
+
+// Get all employees (admin only)
+app.get('/api/admin/employees', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, username, email, full_name, role, employee_id, department, is_active, created_at, last_login 
+       FROM users 
+       WHERE role = 'employee' 
+       ORDER BY full_name`
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('❌ Error fetching employees:', error);
+    res.status(500).json({ error: 'Failed to fetch employees' });
+  }
+});
+
+// ==================== JOURNAL ROUTES ====================
+
+// Get entries (employees see their own, admins can see anyone's)
+app.get('/api/entries', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.query.userId || req.user.id;
+
+    // Only admins can view other users' entries
+    if (userId != req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const result = await pool.query(
+      `SELECT 
+        entry_date, one_sentence, mood, morning, work, moments, 
+        thoughts, gratitude, end_of_day, study_start_time, study_end_time, 
+        study_subject, study_notes, created_at, updated_at 
+      FROM journal_entries 
+      WHERE user_id = $1
+      ORDER BY entry_date DESC`,
+      [userId]
+    );
+
+    const entries = {};
+    result.rows.forEach(row => {
+      const date = new Date(row.entry_date);
+      const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+      
+      entries[key] = {
+        oneSentence: row.one_sentence || '',
+        mood: row.mood || '',
+        morning: row.morning || '',
+        work: row.work || '',
+        moments: row.moments || '',
+        thoughts: row.thoughts || '',
+        gratitude: row.gratitude || '',
+        endOfDay: row.end_of_day || '',
+        studyStartTime: row.study_start_time || '',
+        studyEndTime: row.study_end_time || '',
+        studySubject: row.study_subject || '',
+        studyNotes: row.study_notes || ''
+      };
+    });
+
+    res.json(entries);
+  } catch (error) {
+    console.error('❌ Error fetching entries:', error);
+    res.status(500).json({ error: 'Failed to fetch entries' });
+  }
+});
+
+// Save entry
+app.post('/api/entries', authenticateToken, async (req, res) => {
+  try {
+    const { year, month, day, entry } = req.body;
+    const userId = req.user.id;
+    
+    const entryDate = new Date(year, month, day);
+    
+    const result = await pool.query(
+      `INSERT INTO journal_entries (
+        user_id, entry_date, one_sentence, mood, morning, work, 
+        moments, thoughts, gratitude, end_of_day,
+        study_start_time, study_end_time, study_subject, study_notes,
+        updated_at
+      )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, CURRENT_TIMESTAMP)
+       ON CONFLICT (user_id, entry_date) 
+       DO UPDATE SET 
+         one_sentence = $3, mood = $4, morning = $5, work = $6,
+         moments = $7, thoughts = $8, gratitude = $9, end_of_day = $10,
+         study_start_time = $11, study_end_time = $12, 
+         study_subject = $13, study_notes = $14,
+         updated_at = CURRENT_TIMESTAMP
+       RETURNING *`,
+      [
+        userId, entryDate,
+        entry.oneSentence || null, entry.mood || null,
+        entry.morning || null, entry.work || null,
+        entry.moments || null, entry.thoughts || null,
+        entry.gratitude || null, entry.endOfDay || null,
+        entry.studyStartTime || null, entry.studyEndTime || null,
+        entry.studySubject || null, entry.studyNotes || null
+      ]
+    );
+
+    // Log activity
+    await pool.query(
+      'INSERT INTO activity_log (user_id, action_type, action_details) VALUES ($1, $2, $3)',
+      [userId, 'journal_entry', `Created/updated entry for ${entryDate.toDateString()}`]
+    );
+
+    res.json({ success: true, entry: result.rows[0] });
+  } catch (error) {
+    console.error('❌ Error saving entry:', error);
+    res.status(500).json({ error: 'Failed to save entry' });
+  }
+});
+
+// Delete entry
+app.delete('/api/entries/:year/:month/:day', authenticateToken, async (req, res) => {
+  try {
+    const { year, month, day } = req.params;
+    const userId = req.user.id;
+    const entryDate = new Date(parseInt(year), parseInt(month), parseInt(day));
+    
+    await pool.query(
+      'DELETE FROM journal_entries WHERE user_id = $1 AND entry_date = $2',
+      [userId, entryDate]
+    );
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('❌ Error deleting entry:', error);
+    res.status(500).json({ error: 'Failed to delete entry' });
+  }
+});
+
+// ==================== HOLIDAYS ROUTES ====================
+
+// Get holidays
+app.get('/api/holidays', authenticateToken, async (req, res) => {
+  try {
+    const { year } = req.query;
+    
+    let query = 'SELECT * FROM holidays';
+    let params = [];
+    
+    if (year) {
+      query += ' WHERE EXTRACT(YEAR FROM holiday_date) = $1';
+      params.push(year);
+    }
+    
+    query += ' ORDER BY holiday_date';
+    
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('❌ Error fetching holidays:', error);
+    res.status(500).json({ error: 'Failed to fetch holidays' });
+  }
+});
+
+// Add holiday (admin only)
+app.post('/api/admin/holidays', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { holidayName, holidayDate, description, isRecurring } = req.body;
+    
+    const result = await pool.query(
+      `INSERT INTO holidays (holiday_name, holiday_date, description, is_recurring, created_by)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [holidayName, holidayDate, description, isRecurring, req.user.id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('❌ Error adding holiday:', error);
+    res.status(500).json({ error: 'Failed to add holiday' });
+  }
+});
+
+// Delete holiday (admin only)
+app.delete('/api/admin/holidays/:id', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM holidays WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('❌ Error deleting holiday:', error);
+    res.status(500).json({ error: 'Failed to delete holiday' });
+  }
+});
+
+// ==================== ADMIN DASHBOARD ====================
+
+// Get dashboard stats
+app.get('/api/admin/dashboard', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const stats = await pool.query('SELECT * FROM admin_dashboard_stats');
+    res.json(stats.rows[0]);
+  } catch (error) {
+    console.error('❌ Error fetching dashboard stats:', error);
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+});
+
+// Get activity log
+app.get('/api/admin/activity-log', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { limit = 50, userId } = req.query;
+    
+    let query = `
+      SELECT al.*, u.full_name, u.username
+      FROM activity_log al
+      JOIN users u ON al.user_id = u.id
+    `;
+    let params = [];
+    
+    if (userId) {
+      query += ' WHERE al.user_id = $1';
+      params.push(userId);
+    }
+    
+    query += ' ORDER BY al.created_at DESC LIMIT $' + (params.length + 1);
+    params.push(limit);
+    
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('❌ Error fetching activity log:', error);
+    res.status(500).json({ error: 'Failed to fetch activity log' });
+  }
+});
+
+// Get monthly summary (with user parameter for admin)
+app.get('/api/monthly-summary/:year/:month', authenticateToken, async (req, res) => {
+  try {
+    const { year, month } = req.params;
+    const userId = req.query.userId || req.user.id;
+
+    // Only admins can view other users' summaries
+    if (userId != req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const stats = await pool.query(
+      `SELECT 
+        COUNT(*) as total_entries,
+        COALESCE(SUM(
+          CASE 
+            WHEN study_start_time IS NOT NULL AND study_end_time IS NOT NULL 
+            THEN EXTRACT(EPOCH FROM (study_end_time - study_start_time)) / 3600 
+            ELSE 0 
+          END
+        ), 0) as total_study_hours,
+        mode() WITHIN GROUP (ORDER BY mood) FILTER (WHERE mood IS NOT NULL) as most_common_mood,
+        COUNT(CASE WHEN gratitude IS NOT NULL AND gratitude != '' THEN 1 END) as gratitude_count,
+        array_agg(DISTINCT study_subject) FILTER (WHERE study_subject IS NOT NULL AND study_subject != '') as study_subjects
+      FROM journal_entries
+      WHERE user_id = $1 
+        AND EXTRACT(YEAR FROM entry_date) = $2 
+        AND EXTRACT(MONTH FROM entry_date) = $3`,
+      [userId, year, parseInt(month) + 1]
+    );
+
+    const entries = await pool.query(
+      `SELECT entry_date, one_sentence, mood, moments, study_subject, gratitude
+       FROM journal_entries
+       WHERE user_id = $1 
+         AND EXTRACT(YEAR FROM entry_date) = $2 
+         AND EXTRACT(MONTH FROM entry_date) = $3
+       ORDER BY entry_date ASC`,
+      [userId, year, parseInt(month) + 1]
+    );
+
+    const statsData = stats.rows[0];
+    const summary = generateSummary(statsData, entries.rows);
+
+    res.json({
+      year: parseInt(year),
+      month: parseInt(month),
+      totalEntries: parseInt(statsData.total_entries),
+      totalStudyHours: parseFloat(statsData.total_study_hours).toFixed(1),
+      mostCommonMood: statsData.most_common_mood,
+      gratitudeCount: parseInt(statsData.gratitude_count),
+      studySubjects: statsData.study_subjects || [],
+      summary: summary,
+      entries: entries.rows
+    });
+  } catch (error) {
+    console.error('❌ Error fetching monthly summary:', error);
+    res.status(500).json({ error: 'Failed to fetch monthly summary' });
+  }
+});
+
+function generateSummary(data, entries) {
+  const { total_entries, total_study_hours, most_common_mood, gratitude_count } = data;
+  
+  if (total_entries === 0) {
+    return "No entries for this month yet.";
+  }
+  
+  let summary = `This month, you journaled ${total_entries} day${total_entries > 1 ? 's' : ''}. `;
+  
+  if (total_study_hours > 0) {
+    summary += `You dedicated ${Math.round(total_study_hours * 10) / 10} hours to studying. `;
+  }
+  
+  if (most_common_mood) {
+    const moodEmojis = { happy: '😊', peaceful: '😌', neutral: '😐', sad: '😔', tired: '😴' };
+    summary += `Your most common mood was ${most_common_mood} ${moodEmojis[most_common_mood] || ''}. `;
+  }
+  
+  if (gratitude_count > 0) {
+    summary += `You expressed gratitude ${gratitude_count} time${gratitude_count > 1 ? 's' : ''}. `;
+  }
+  
+  return summary;
+}
+
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`
+╔════════════════════════════════════════╗
+║   🚀 Pixel Calendar Server Running    ║
+║                                        ║
+║   Port: ${PORT}                          ║
+║   Multi-User Mode: ENABLED             ║
+║   Auth: JWT Token                      ║
+╚════════════════════════════════════════╝
+  `);
+});
+
+process.on('SIGTERM', () => {
+  pool.end(() => console.log('💤 Database pool closed'));
+});

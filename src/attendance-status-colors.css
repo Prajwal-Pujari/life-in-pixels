@@ -1,0 +1,149 @@
+/* ==================== ATTENDANCE STATUS BORDERS & BACKGROUNDS ==================== */
+
+/* Present - Light Green */
+.day-box.attendance-present {
+    background: #d1fae5 !important;
+    /* Light green background */
+    border: 4px solid #10b981 !important;
+    /* Green border */
+    box-shadow: 0 0 0 2px #10b981;
+    color: #065f46 !important;
+    /* Dark green text */
+}
+
+.day-box.attendance-present .day-number {
+    color: #065f46;
+}
+
+/* Absent - Light Red */
+.day-box.attendance-absent {
+    background: #fee2e2 !important;
+    /* Light red background */
+    border: 4px solid #ef4444 !important;
+    /* Red border */
+    box-shadow: 0 0 0 2px #ef4444;
+    color: #991b1b !important;
+    /* Dark red text */
+}
+
+.day-box.attendance-absent .day-number {
+    color: #991b1b;
+}
+
+/* Half Day - Light Orange */
+.day-box.attendance-half_day {
+    background: #fed7aa !important;
+    /* Light orange background */
+    border: 4px solid #f59e0b !important;
+    /* Orange border */
+    box-shadow: 0 0 0 2px #f59e0b;
+    color: #92400e !important;
+    /* Dark orange text */
+}
+
+.day-box.attendance-half_day .day-number {
+    color: #92400e;
+}
+
+/* Work From Home - Light Blue */
+.day-box.attendance-wfh {
+    background: #dbeafe !important;
+    /* Light blue background */
+    border: 4px solid #3b82f6 !important;
+    /* Blue border */
+    box-shadow: 0 0 0 2px #3b82f6;
+    color: #1e3a8a !important;
+    /* Dark blue text */
+}
+
+.day-box.attendance-wfh .day-number {
+    color: #1e3a8a;
+}
+
+/* On Leave - Light Purple */
+.day-box.attendance-on_leave,
+.day-box.attendance-leave {
+    background: #f3e8ff !important;
+    /* Light purple background */
+    border: 4px solid #a855f7 !important;
+    /* Purple border */
+    box-shadow: 0 0 0 2px #a855f7;
+    color: #6b21a8 !important;
+    /* Dark purple text */
+}
+
+.day-box.attendance-on_leave .day-number,
+.day-box.attendance-leave .day-number {
+    color: #6b21a8;
+}
+
+/* Attendance indicator dot in corner */
+.day-box[class*="attendance-"]::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.day-box.attendance-present::after {
+    background: #10b981;
+}
+
+.day-box.attendance-absent::after {
+    background: #ef4444;
+}
+
+.day-box.attendance-half_day::after {
+    background: #f59e0b;
+}
+
+.day-box.attendance-wfh::after {
+    background: #3b82f6;
+}
+
+.day-box.attendance-on_leave::after,
+.day-box.attendance-leave::after {
+    background: #a855f7;
+}
+
+/* Make sure attendance status takes priority over past/future/today states */
+.day-box.past.attendance-present,
+.day-box.future.attendance-present,
+.day-box.today.attendance-present {
+    background: #d1fae5 !important;
+    color: #065f46 !important;
+}
+
+.day-box.past.attendance-absent,
+.day-box.future.attendance-absent,
+.day-box.today.attendance-absent {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+}
+
+.day-box.past.attendance-half_day,
+.day-box.future.attendance-half_day,
+.day-box.today.attendance-half_day {
+    background: #fed7aa !important;
+    color: #92400e !important;
+}
+
+.day-box.past.attendance-wfh,
+.day-box.future.attendance-wfh,
+.day-box.today.attendance-wfh {
+    background: #dbeafe !important;
+    color: #1e3a8a !important;
+}
+
+.day-box.past.attendance-on_leave,
+.day-box.future.attendance-on_leave,
+.day-box.past.attendance-leave,
+.day-box.future.attendance-leave,
+.day-box.today.attendance-on_leave,
+.day-box.today.attendance-leave {
+    background: #f3e8ff !important;
+    color: #6b21a8 !important;
+}

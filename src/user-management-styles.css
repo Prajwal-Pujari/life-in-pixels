@@ -1,0 +1,400 @@
+/* ==================== USER MANAGEMENT MODAL - REDESIGNED ==================== */
+
+.user-management-modal {
+    max-width: 900px;
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 0;
+}
+
+/* Modal Header */
+.user-management-modal .modal-header {
+    padding: 1.5rem;
+    border-bottom: 3px solid var(--border);
+    background: var(--bg-secondary);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.user-management-modal .modal-header h2 {
+    font-size: 1rem;
+    margin: 0;
+    letter-spacing: 2px;
+}
+
+/* Action Buttons Container */
+.user-management-actions {
+    padding: 1.5rem;
+    border-bottom: 2px solid var(--border);
+    background: var(--bg-primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn-create-user {
+    background: var(--success-green);
+    border: 3px solid var(--border);
+    padding: 1rem 1.5rem;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.6rem;
+    cursor: pointer;
+    color: white;
+    box-shadow: 0 4px 0 var(--border);
+    transition: all 0.2s;
+    letter-spacing: 1px;
+}
+
+.btn-create-user:hover {
+    background: #22c55e;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border);
+}
+
+.btn-create-user:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--border);
+}
+
+/* Create User Form */
+.create-user-form {
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-bottom: 3px solid var(--border);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-field label {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.55rem;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+}
+
+.form-field input,
+.form-field select {
+    background: var(--bg-primary);
+    border: 3px solid var(--border);
+    padding: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.form-field input:focus,
+.form-field select:focus {
+    outline: none;
+    border-color: var(--accent-today);
+}
+
+.form-field.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 2px solid var(--border);
+}
+
+.btn-submit,
+.btn-form-cancel {
+    background: var(--bg-secondary);
+    border: 3px solid var(--border);
+    padding: 1rem 1.5rem;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.6rem;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--border);
+    transition: all 0.2s;
+    letter-spacing: 1px;
+}
+
+.btn-submit {
+    background: var(--success-green);
+    color: white;
+}
+
+.btn-submit:hover:not(:disabled) {
+    background: #22c55e;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border);
+}
+
+.btn-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-form-cancel:hover {
+    background: var(--day-past);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border);
+}
+
+/* Users List Section */
+.users-list {
+    padding: 2rem;
+}
+
+.users-list h3 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
+/* Users Table */
+.users-table {
+    overflow-x: auto;
+    border: 3px solid var(--border);
+    box-shadow: 0 4px 0 var(--border);
+}
+
+.users-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+}
+
+.users-table thead {
+    background: var(--bg-secondary);
+    border-bottom: 3px solid var(--border);
+}
+
+.users-table th {
+    padding: 1rem;
+    text-align: left;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.55rem;
+    letter-spacing: 1px;
+    font-weight: normal;
+    white-space: nowrap;
+}
+
+.users-table td {
+    padding: 1rem;
+    border-bottom: 2px solid var(--border);
+    vertical-align: middle;
+}
+
+.users-table tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+.users-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Table Column Widths */
+.users-table th:nth-child(1),
+.users-table td:nth-child(1) {
+    width: 100px;
+    text-align: center;
+}
+
+.users-table th:nth-child(2),
+.users-table td:nth-child(2) {
+    width: 180px;
+}
+
+.users-table th:nth-child(3),
+.users-table td:nth-child(3) {
+    width: 150px;
+}
+
+.users-table th:nth-child(4),
+.users-table td:nth-child(4) {
+    width: 200px;
+}
+
+.users-table th:nth-child(5),
+.users-table td:nth-child(5) {
+    width: 100px;
+    text-align: center;
+}
+
+.users-table th:nth-child(6),
+.users-table td:nth-child(6) {
+    width: 100px;
+    text-align: center;
+}
+
+.users-table th:nth-child(7),
+.users-table td:nth-child(7) {
+    width: 150px;
+    text-align: center;
+}
+
+/* Badges */
+.role-badge,
+.status-badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border: 2px solid var(--border);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.5rem;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+
+.role-badge.admin {
+    background: var(--admin-blue);
+    color: white;
+}
+
+.role-badge.employee {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.status-badge.active {
+    background: var(--success-green);
+    color: white;
+}
+
+.status-badge.inactive {
+    background: #ef4444;
+    color: white;
+}
+
+/* Action Buttons in Table */
+.btn-deactivate,
+.btn-activate {
+    background: var(--bg-primary);
+    border: 2px solid var(--border);
+    padding: 0.5rem 0.75rem;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.45rem;
+    cursor: pointer;
+    box-shadow: 0 2px 0 var(--border);
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.btn-deactivate {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-activate {
+    background: var(--success-green);
+    color: white;
+}
+
+.btn-deactivate:hover,
+.btn-activate:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 0 var(--border);
+}
+
+.btn-deactivate:active,
+.btn-activate:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 0 var(--border);
+}
+
+/* Messages */
+.error-message,
+.success-message {
+    padding: 1rem 1.5rem;
+    border: 3px solid var(--border);
+    margin: 1rem 1.5rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+}
+
+.error-message {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #ef4444;
+}
+
+.success-message {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #10b981;
+}
+
+/* No Users State */
+.no-users {
+    padding: 3rem;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .user-management-modal {
+        max-width: 95%;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .users-table {
+        font-size: 0.75rem;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-management-actions {
+        flex-direction: column;
+    }
+
+    .btn-create-user {
+        width: 100%;
+    }
+
+    .users-table {
+        font-size: 0.7rem;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 0.5rem 0.3rem;
+    }
+
+    .role-badge,
+    .status-badge,
+    .btn-deactivate,
+    .btn-activate {
+        font-size: 0.4rem;
+    }
+}

@@ -1,0 +1,112 @@
+import React, { useState } from 'react';
+
+interface LoginProps {
+  onLogin: (token: string, user: any) => void;
+}
+
+const Login: React.FC<LoginProps> = ({ onLogin }) => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+
+      // Store token and user info
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      onLogin(data.token, data.user);
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="login-container">
+      <div className="login-box">
+        <div className="login-header">
+          {/* <div className="login-logo">📅</div> */}
+          <h1 className="login-title">Life In A PIXEL</h1>
+          <p className="login-subtitle">ATTENDANCE & JOURNAL SYSTEM</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="login-form">
+          {error && (
+            <div className="login-error">
+              ⚠️ {error}
+            </div>
+          )}
+
+          <div className="form-group">
+            <label className="form-label">USERNAME</label>
+            <input
+              type="text"
+              className="form-input"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter username"
+              required
+              autoFocus
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">PASSWORD</label>
+            <input
+              type="password"
+              className="form-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter password"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="login-btn"
+            disabled={isLoading}
+          >
+            {isLoading ? 'LOGGING IN...' : 'LOGIN'}
+          </button>
+        </form>
+
+        <div className="login-demo-info">
+          <div className="demo-title">DEMO ACCOUNTS:</div>
+          <div className="demo-accounts">
+            <div className="demo-account">
+              <strong>Admin:</strong> admin / admin123
+            </div>
+            <div className="demo-account">
+              <strong>Employee:</strong> john.doe / admin123
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Login;

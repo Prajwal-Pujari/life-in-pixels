@@ -1,0 +1,66 @@
+/* Telegram Report Button */
+.btn-admin-dashboard.telegram-btn {
+    background: linear-gradient(135deg, #0088cc 0%, #0066aa 100%);
+    color: white;
+    animation: telegramPulse 2s ease-in-out infinite;
+}
+
+.btn-admin-dashboard.telegram-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0099dd 0%, #0077bb 100%);
+    transform: translateY(-2px);
+}
+
+.btn-admin-dashboard.telegram-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    animation: none;
+}
+
+@keyframes telegramPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 4px 0 var(--border), 0 0 0 rgba(0, 136, 204, 0);
+    }
+
+    50% {
+        box-shadow: 0 4px 0 var(--border), 0 0 20px rgba(0, 136, 204, 0.5);
+    }
+}
+
+/* Telegram Notification */
+.telegram-notification {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border: 3px solid var(--border);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.6rem;
+    z-index: 1000;
+    animation: slideInRight 0.3s ease-out;
+    box-shadow: 0 4px 0 var(--border);
+    max-width: 400px;
+}
+
+.telegram-notification.success {
+    background: var(--success-green);
+    color: white;
+}
+
+.telegram-notification.error {
+    background: #ef4444;
+    color: white;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

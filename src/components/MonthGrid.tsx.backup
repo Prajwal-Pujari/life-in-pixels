@@ -1,18 +1,18 @@
+```typescript
 import React from 'react';
 import DayBox from './DayBox';
 
 interface MonthGridProps {
   currentDate: Date;
-  entries: Record<string, any>;
-  holidays: Record<string, string>;
-  attendance: Record<string, string>;
   onDayClick: (year: number, month: number, day: number) => void;
+  entries: Record<string, any>; // Changed from Record<string, string> to accept JournalEntry objects
+  holidays: Record<string, string>;
 }
 
-const MonthGrid: React.FC<MonthGridProps> = ({ currentDate, onDayClick, entries, holidays, attendance }) => {
+const MonthGrid: React.FC<MonthGridProps> = ({ currentDate, onDayClick, entries, holidays = {} }) => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  const today = new Date();
+  const today = new Date(); // Assuming 'today' refers to the actual current date, not the date passed in props
 
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
@@ -20,51 +20,38 @@ const MonthGrid: React.FC<MonthGridProps> = ({ currentDate, onDayClick, entries,
   const startWeekday = firstDay.getDay();
 
   const getDayState = (day: number): 'past' | 'today' | 'future' | 'holiday' => {
-    const currentDayDate = new Date(year, month, day);
+    const currentDate = new Date(year, month, day);
     const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
+    
     // Check if it's a holiday first
-    const dayKey = `${year}-${month + 1}-${day}`;
+    const dayKey = `${ year } -${ month } -${ day } `;
     if (holidays[dayKey]) return 'holiday';
-
-    if (currentDayDate < todayDate) return 'past';
-    if (currentDayDate.getTime() === todayDate.getTime()) return 'today';
+    
+    if (currentDate < todayDate) return 'past';
+    if (currentDate.getTime() === todayDate.getTime()) return 'today';
     return 'future';
   };
 
-  const hasEntry = (day: number): boolean => {
-    const key = `${year}-${month + 1}-${day}`;
-    return !!entries[key];
-  };
-
-  const getHolidayName = (day: number): string | undefined => {
-    const key = `${year}-${month + 1}-${day}`;
-    return holidays[key];
-  };
-
-  const getAttendanceStatus = (day: number): string | undefined => {
-    const key = `${year}-${month + 1}-${day}`;
-    return attendance[key];
-  };
+  const getDayKey = (day: number) => `${ year } -${ month } -${ day } `;
 
   const days = [];
-
-  // Add placeholder boxes for days before month starts
+  
   for (let i = 0; i < startWeekday; i++) {
-    days.push(<div key={`placeholder-${i}`} className="day-box placeholder"></div>);
+    days.push(<DayBox key={`placeholder - ${ i } `} day={null} state="placeholder" />);
   }
-
-  // Add actual day boxes
+  
   for (let day = 1; day <= daysInMonth; day++) {
+    const dayKey = getDayKey(day);
+    const holidayName = holidays[dayKey];
+    
     days.push(
-      <DayBox
-        key={day}
-        day={day}
+      <DayBox 
+        key={day} 
+        day={day} 
         state={getDayState(day)}
-        hasEntry={hasEntry(day)}
-        holidayName={getHolidayName(day)}
-        attendanceStatus={getAttendanceStatus(day)}
         onClick={() => onDayClick(year, month, day)}
+        hasEntry={!!entries[dayKey]}
+        holidayName={holidayName}
       />
     );
   }
@@ -77,10 +64,8 @@ const MonthGrid: React.FC<MonthGridProps> = ({ currentDate, onDayClick, entries,
   const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
   return (
-    <div className="month-container">
-      <div className="month-header">
-        <h2>{monthNames[month]} {year}</h2>
-      </div>
+    <div className="month-grid">
+      <h2 className="month-title">{monthNames[month]} {year}</h2>
       <div className="weekday-labels">
         {weekdays.map(day => (
           <div key={day} className="weekday-label">{day}</div>

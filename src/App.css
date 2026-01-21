@@ -1,8 +1,7 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .logo {
@@ -10,18 +9,22 @@
   padding: 1.5em;
   will-change: filter;
   transition: filter 300ms;
+  image-rendering: pixelated;
 }
+
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 2em var(--accent-today));
 }
+
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 2em var(--accent-today));
 }
 
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -34,9 +37,15 @@
 }
 
 .card {
-  padding: 2em;
+  background: var(--bg-secondary);
+  border: 4px solid var(--border);
+  padding: 2rem;
+  box-shadow: 4px 4px 0 var(--border);
 }
 
 .read-the-docs {
-  color: #888;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.5rem;
+  color: var(--text-muted);
+  letter-spacing: 1px;
 }

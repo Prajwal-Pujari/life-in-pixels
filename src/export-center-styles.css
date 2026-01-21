@@ -1,0 +1,208 @@
+/* Export Center Styles */
+
+:root {
+    --accent: #ff8800;
+    --success-green: #16a34a;
+    --text-secondary: #666;
+}
+
+.export-center-modal {
+    width: 700px;
+    max-width: 95%;
+    max-height: 85vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.export-center-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    max-height: calc(85vh - 120px);
+}
+
+.export-type-selector {
+    margin-bottom: 2rem;
+}
+
+.export-type-selector label {
+    display: block;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.7rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.report-types {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+
+.report-type-btn {
+    padding: 0.85rem;
+    background: var(--bg-secondary);
+    border: 3px solid var(--border);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.55rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.report-type-btn:hover:not(.disabled) {
+    background: var(--accent);
+    transform: translateY(-2px);
+}
+
+.report-type-btn.active {
+    background: var(--accent);
+    box-shadow: 0 0 15px rgba(255, 136, 0, 0.5);
+}
+
+.report-type-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.export-form {
+    background: var(--bg-secondary);
+    border: 3px solid var(--border);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.65rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+.export-select,
+.export-input {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--bg-primary);
+    border: 2px solid var(--border);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.6rem;
+    color: var(--text-primary);
+}
+
+.date-range {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.date-range input {
+    flex: 1;
+}
+
+.date-range span {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.65rem;
+}
+
+.export-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.btn-export {
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    border: 3px solid var(--border);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.65rem;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 0 var(--border);
+}
+
+.btn-export:hover:not(:disabled) {
+    background: linear-gradient(135deg, #45a049 0%, #4CAF50 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border), 0 0 20px rgba(76, 175, 80, 0.5);
+}
+
+.btn-export:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--border);
+}
+
+.btn-export:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.export-message {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 2px solid var(--border);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.6rem;
+    text-align: center;
+}
+
+.export-message.success {
+    background: var(--success-green);
+    color: white;
+}
+
+.export-message.error {
+    background: #F44336;
+    color: white;
+}
+
+.export-info {
+    background: var(--bg-primary);
+    border: 2px solid var(--border);
+    padding: 1rem;
+}
+
+.export-info h4 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.65rem;
+    margin-bottom: 1rem;
+    color: var(--accent);
+}
+
+.export-info ul {
+    list-style: none;
+    padding: 0;
+}
+
+.export-info li {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.55rem;
+    padding: 0.5rem 0;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+    .export-center-modal {
+        width: 100%;
+    }
+
+    .report-types {
+        flex-direction: column;
+    }
+
+    .date-range {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

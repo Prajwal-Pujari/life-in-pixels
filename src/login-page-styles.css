@@ -1,0 +1,272 @@
+/* ==================== LOGIN PAGE STYLES ==================== */
+
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-primary);
+    padding: 2rem;
+}
+
+.login-box {
+    background: var(--bg-secondary);
+    border: 4px solid var(--border);
+    box-shadow: 0 8px 0 var(--border);
+    max-width: 500px;
+    width: 100%;
+    padding: 3rem 2.5rem;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 3px solid var(--border);
+}
+
+.login-title {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+    line-height: 1.6;
+}
+
+.login-subtitle {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.5rem;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* Google Login Button */
+.google-login-btn {
+    width: 100%;
+    background: white;
+    border: 3px solid var(--border);
+    padding: 1rem 1.5rem;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.55rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 0 var(--border);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    letter-spacing: 1px;
+    margin-bottom: 2rem;
+}
+
+.google-login-btn:hover:not(:disabled) {
+    background: var(--bg-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border);
+}
+
+.google-login-btn:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--border);
+}
+
+.google-login-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Login Divider */
+.login-divider {
+    text-align: center;
+    position: relative;
+    margin: 2rem 0;
+}
+
+.login-divider::before,
+.login-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 2px;
+    background: var(--border);
+}
+
+.login-divider::before {
+    left: 0;
+}
+
+.login-divider::after {
+    right: 0;
+}
+
+.login-divider span {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.6rem;
+    background: var(--bg-secondary);
+    padding: 0 1rem;
+    color: var(--text-muted);
+    position: relative;
+    z-index: 1;
+}
+
+/* Login Form */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-label {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.55rem;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+}
+
+.form-input {
+    background: var(--bg-primary);
+    border: 3px solid var(--border);
+    padding: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    transition: border-color 0.2s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--accent-today);
+}
+
+/* Login Button */
+.login-btn {
+    width: 100%;
+    background: var(--success-green);
+    border: 3px solid var(--border);
+    padding: 1rem 1.5rem;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.6rem;
+    cursor: pointer;
+    color: white;
+    box-shadow: 0 4px 0 var(--border);
+    transition: all 0.2s;
+    letter-spacing: 1px;
+    margin-top: 0.5rem;
+}
+
+.login-btn:hover:not(:disabled) {
+    background: #22c55e;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border);
+}
+
+.login-btn:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--border);
+}
+
+.login-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Error Message */
+.login-error {
+    background: #fee2e2;
+    border: 3px solid #ef4444;
+    padding: 1rem;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.5rem;
+    color: #991b1b;
+    text-align: center;
+    letter-spacing: 0.5px;
+    line-height: 1.6;
+}
+
+/* Demo Info */
+.login-demo-info {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border);
+}
+
+.demo-title {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.5rem;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+    text-align: center;
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.demo-accounts {
+    background: var(--bg-primary);
+    border: 2px solid var(--border);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.demo-account {
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.demo-account strong {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.5rem;
+    color: var(--text-primary);
+    display: inline-block;
+    min-width: 100px;
+}
+
+.demo-note {
+    font-family: 'Courier New', monospace;
+    font-size: 0.7rem;
+    text-align: center;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    padding: 0.75rem;
+    background: var(--day-today);
+    border: 2px solid var(--border);
+}
+
+.demo-note strong {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.5rem;
+    color: var(--text-primary);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .login-box {
+        padding: 2rem 1.5rem;
+    }
+
+    .login-title {
+        font-size: 0.9rem;
+    }
+
+    .login-subtitle {
+        font-size: 0.45rem;
+    }
+
+    .google-login-btn,
+    .login-btn {
+        font-size: 0.5rem;
+    }
+}

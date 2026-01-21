@@ -1,0 +1,794 @@
+/* ==================== PENDING APPROVAL SCREEN WITH RETRO ANIMATIONS ==================== */
+
+:root {
+    --success-green: #16a34a;
+    --text-secondary: #666;
+}
+
+.pending-approval-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1a2e;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Animated pixel background */
+.pixel-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0px, transparent 2px),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0px, transparent 2px);
+    background-size: 20px 20px;
+    animation: pixelMove 20s linear infinite;
+    z-index: 0;
+}
+
+@keyframes pixelMove {
+    0% {
+        background-position: 0 0;
+    }
+
+    100% {
+        background-position: 20px 20px;
+    }
+}
+
+.pending-approval-card {
+    background: var(--bg-secondary);
+    border: 4px solid var(--border);
+    box-shadow: 0 0 20px rgba(79, 209, 197, 0.3), 0 8px 0 var(--border);
+    max-width: 700px;
+    width: 100%;
+    padding: 3rem 2.5rem;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    animation: cardFloat 3s ease-in-out infinite;
+}
+
+@keyframes cardFloat {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.pending-icon-container {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.pending-icon {
+    font-size: 5rem;
+    animation: spin 3s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-dots {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.5rem;
+    color: var(--accent-today);
+    height: 2rem;
+    margin-top: 0.5rem;
+}
+
+.pending-title {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.2rem;
+    letter-spacing: 3px;
+    margin: 1rem 0;
+    color: var(--accent-today);
+    text-shadow: 0 0 10px rgba(79, 209, 197, 0.5);
+    animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+
+    0%,
+    100% {
+        text-shadow: 0 0 10px rgba(79, 209, 197, 0.5);
+    }
+
+    50% {
+        text-shadow: 0 0 20px rgba(79, 209, 197, 0.8), 0 0 30px rgba(79, 209, 197, 0.6);
+    }
+}
+
+.status-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-primary);
+    border: 2px solid var(--border);
+    margin: 2rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.status-bar-fill {
+    height: 100%;
+    background: var(--accent-today);
+    animation: fillBar 2s ease-in-out infinite;
+    box-shadow: 0 0 10px var(--accent-today);
+}
+
+@keyframes fillBar {
+    0% {
+        width: 20%;
+    }
+
+    50% {
+        width: 80%;
+    }
+
+    100% {
+        width: 20%;
+    }
+}
+
+.pending-message {
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    line-height: 1.8;
+    margin: 2rem 0;
+    color: var(--text-secondary);
+}
+
+.user-info-box {
+    background: var(--bg-primary);
+    border: 3px solid var(--border);
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.avatar-container {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+}
+
+.user-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid var(--accent-today);
+    position: relative;
+    z-index: 2;
+    animation: avatarPulse 2s ease-in-out infinite;
+}
+
+@keyframes avatarPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.avatar-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(79, 209, 197, 0.3) 0%, transparent 70%);
+    animation: glowPulse 2s ease-in-out infinite;
+    z-index: 1;
+}
+
+@keyframes glowPulse {
+
+    0%,
+    100% {
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+}
+
+.info-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.info-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    text-align: left;
+    transition: all 0.3s;
+}
+
+.info-row:hover {
+    border-color: var(--accent-today);
+    transform: translateX(5px);
+}
+
+.info-label {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.5rem;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+}
+
+.info-value {
+    font-family: 'Courier New', monospace;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.glow-text {
+    color: var(--accent-today);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.7rem;
+    animation: textGlow 2s ease-in-out infinite;
+}
+
+@keyframes textGlow {
+
+    0%,
+    100% {
+        text-shadow: 0 0 5px rgba(79, 209, 197, 0.5);
+    }
+
+    50% {
+        text-shadow: 0 0 15px rgba(79, 209, 197, 1);
+    }
+}
+
+/* Progress Steps */
+.pending-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 2.5rem 0;
+    gap: 0.5rem;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.step-icon {
+    width: 50px;
+    height: 50px;
+    border: 3px solid var(--border);
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    border-radius: 8px;
+}
+
+.step.complete .step-icon {
+    background: var(--success-green);
+    border-color: var(--success-green);
+    color: white;
+}
+
+.step.active .step-icon {
+    background: var(--accent-today);
+    border-color: var(--accent-today);
+    color: white;
+}
+
+.step-icon.pulse {
+    animation: iconPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
+}
+
+.step-text {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.45rem;
+    color: var(--text-secondary);
+    text-align: center;
+    max-width: 80px;
+}
+
+.step.active .step-text {
+    color: var(--accent-today);
+}
+
+.step-connector {
+    width: 40px;
+    height: 3px;
+    background: var(--border);
+    margin-bottom: 40px;
+}
+
+.step-connector.active {
+    background: var(--accent-today);
+    animation: connectorGlow 2s ease-in-out infinite;
+}
+
+@keyframes connectorGlow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 5px var(--accent-today);
+    }
+
+    50% {
+        box-shadow: 0 0 15px var(--accent-today);
+    }
+}
+
+.pending-note {
+    background: var(--bg-primary);
+    border: 2px solid var(--border);
+    padding: 1.5rem;
+    margin: 2rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.note-icon {
+    font-size: 2rem;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.pending-note p {
+    margin: 0.5rem 0;
+    font-family: 'Courier New', monospace;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.btn-logout-pending {
+    background: var(--day-past);
+    border: 3px solid var(--border);
+    padding: 1rem 2rem;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.7rem;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--border);
+    transition: all 0.2s;
+    letter-spacing: 1px;
+    margin-top: 1rem;
+}
+
+.btn-logout-pending:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border);
+    background: #e85d75;
+}
+
+.btn-logout-pending:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--border);
+}
+
+/* ==================== USER APPROVAL ADMIN PANEL - ENHANCED ==================== */
+
+.user-approval-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.approval-header {
+    margin-bottom: 2rem;
+    border-bottom: 3px solid var(--border);
+    padding-bottom: 1rem;
+    background: var(--bg-secondary);
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.approval-header h2 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    margin: 0 0 0.5rem 0;
+    color: var(--accent-today);
+}
+
+.approval-subtitle {
+    font-family: 'Courier New', monospace;
+    color: var(--text-secondary);
+    margin: 0.5rem 0 0 0;
+    font-size: 0.95rem;
+}
+
+.no-pending-users {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--bg-secondary);
+    border: 3px solid var(--border);
+    border-radius: 8px;
+}
+
+.check-icon {
+    font-size: 4rem;
+    color: var(--success-green);
+    margin-bottom: 1rem;
+    animation: checkBounce 2s ease-in-out infinite;
+}
+
+@keyframes checkBounce {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.no-pending-users p {
+    font-family: 'Courier New', monospace;
+    margin: 0.5rem 0;
+}
+
+.no-pending-users .sub-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 1rem;
+}
+
+.pending-users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.pending-user-card {
+    background: var(--bg-secondary);
+    border: 3px solid var(--border);
+    box-shadow: 0 4px 0 var(--border);
+    padding: 1.5rem;
+    transition: all 0.3s;
+    border-radius: 8px;
+}
+
+.pending-user-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border), 0 0 15px rgba(79, 209, 197, 0.2);
+}
+
+.pending-user-card.approving {
+    border-color: var(--accent-today);
+    box-shadow: 0 6px 0 var(--accent-today), 0 0 20px rgba(79, 209, 197, 0.4);
+}
+
+.user-card-header {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border);
+}
+
+.pending-user-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 3px solid var(--border);
+    flex-shrink: 0;
+    transition: all 0.3s;
+}
+
+.pending-user-card:hover .pending-user-avatar {
+    border-color: var(--accent-today);
+    box-shadow: 0 0 15px rgba(79, 209, 197, 0.5);
+}
+
+.user-card-info {
+    flex: 1;
+}
+
+.user-card-info h3 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.9rem;
+    margin: 0 0 1rem 0;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+}
+
+.user-email {
+    font-family: 'Courier New', monospace;
+    color: var(--text-secondary);
+    margin: 0.75rem 0;
+    font-size: 0.9rem;
+}
+
+.user-meta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+}
+
+.employee-id-badge {
+    background: var(--accent-today);
+    color: white;
+    border: 2px solid var(--border);
+    padding: 0.4rem 0.8rem;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.5rem;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 0 var(--border);
+}
+
+.joined-date {
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+}
+
+/* Approval Form */
+.approval-form {
+    background: var(--bg-primary);
+    border: 2px solid var(--accent-today);
+    padding: 1.5rem;
+    border-radius: 8px;
+    animation: formSlideIn 0.3s ease-out;
+}
+
+@keyframes formSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-section {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+.role-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.role-option {
+    background: var(--bg-secondary);
+    border: 3px solid var(--border);
+    padding: 1rem;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.55rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 3px 0 var(--border);
+}
+
+.role-option:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 0 var(--border);
+}
+
+.role-option.active {
+    background: var(--accent-today);
+    color: white;
+    border-color: var(--accent-today);
+    box-shadow: 0 3px 0 var(--border), 0 0 15px rgba(79, 209, 197, 0.5);
+}
+
+.department-select {
+    width: 100%;
+    background: var(--bg-secondary);
+    border: 3px solid var(--border);
+    padding: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+}
+
+.btn-new-department {
+    background: var(--bg-secondary);
+    border: 2px dashed var(--border);
+    padding: 0.6rem 1rem;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.5rem;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+}
+
+.btn-new-department:hover {
+    background: var(--accent-today);
+    color: white;
+    border-style: solid;
+}
+
+.new-dept-input {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.dept-input {
+    flex: 1;
+    background: var(--bg-secondary);
+    border: 3px solid var(--border);
+    padding: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.btn-add-dept,
+.btn-cancel-dept {
+    background: var(--success-green);
+    border: 3px solid var(--border);
+    padding: 0.75rem 1rem;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.5rem;
+    cursor: pointer;
+    color: white;
+    box-shadow: 0 3px 0 var(--border);
+}
+
+.btn-cancel-dept {
+    background: var(--day-past);
+}
+
+.approval-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--border);
+}
+
+.btn-confirm-approve,
+.btn-cancel-approval {
+    flex: 1;
+    background: var(--success-green);
+    border: 3px solid var(--border);
+    padding: 1rem;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.6rem;
+    cursor: pointer;
+    color: white;
+    box-shadow: 0 4px 0 var(--border);
+    transition: all 0.2s;
+    letter-spacing: 1px;
+}
+
+.btn-confirm-approve:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border);
+}
+
+.btn-confirm-approve:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-cancel-approval {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+/* Simple Action Buttons */
+.user-card-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-approve,
+.btn-reject {
+    flex: 1;
+    background: var(--success-green);
+    border: 3px solid var(--border);
+    padding: 1rem;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.6rem;
+    cursor: pointer;
+    color: white;
+    box-shadow: 0 4px 0 var(--border);
+    transition: all 0.2s;
+    letter-spacing: 1px;
+}
+
+.btn-reject {
+    background: #ef4444;
+}
+
+.btn-approve:hover,
+.btn-reject:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border);
+}
+
+.btn-approve:active,
+.btn-reject:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--border);
+}
+
+.approval-loading {
+    padding: 3rem;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
