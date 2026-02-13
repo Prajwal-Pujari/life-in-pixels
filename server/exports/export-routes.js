@@ -94,14 +94,91 @@ export async function exportIndividualReport(req, res, pool) {
     }
 }
 
-// TODO: Export bulk report
+
+import { generateBulkReport } from './bulk-report.js';
+import { generateMonthlySummary } from './monthly-summary.js';
+
+// Export bulk report (all employees)
 export async function exportBulkReport(req, res, pool) {
-    res.status(501).json({ error: 'Not implemented yet' });
+    try {
+        const { startDate, endDate } = req.body;
+
+        if (!startDate || !endDate) {
+            return res.status(400).json({
+                error: 'Missing required fields: startDate, endDate'
+            });
+        }
+
+        // Validate date range (max 1 year)
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const daysDiff = (end - start) / (1000 * 60 * 60 * 24);
+
+        if (daysDiff > 365) {
+            return res.status(400).json({
+                error: 'Date range cannot exceed 1 year'
+            });
+        }
+
+        // Generate bulk report
+        const { buffer, filename } = await generateBulkReport(pool, { startDate, endDate });
+
+        // Log activity
+        await pool.query(
+            'INSERT INTO activity_log (user_id, action_type, action_details) VALUES ($1, $2, $3)',
+            [req.user.id, 'export_report', `Exported bulk report for all employees`]
+        );
+
+        // Send file
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.send(buffer);
+
+    } catch (error) {
+        console.error('❌ Error exporting bulk report:', error);
+        res.status(500).json({ error: 'Failed to generate bulk report' });
+    }
 }
 
-// TODO: Export monthly summary
+// Export monthly summary
 export async function exportMonthlySummary(req, res, pool) {
-    res.status(501).json({ error: 'Not implemented yet' });
+    try {
+        const { year, month } = req.body;
+
+        if (!year || !month) {
+            return res.status(400).json({
+                error: 'Missing required fields: year, month'
+            });
+        }
+
+        // Validate year and month
+        const yearNum = parseInt(year);
+        const monthNum = parseInt(month);
+
+        if (yearNum < 2020 || yearNum > 2100 || monthNum < 1 || monthNum > 12) {
+            return res.status(400).json({
+                error: 'Invalid year or month'
+            });
+        }
+
+        // Generate monthly summary
+        const { buffer, filename } = await generateMonthlySummary(pool, yearNum, monthNum);
+
+        // Log activity
+        await pool.query(
+            'INSERT INTO activity_log (user_id, action_type, action_details) VALUES ($1, $2, $3)',
+            [req.user.id, 'export_report', `Exported monthly summary for ${year}-${month}`]
+        );
+
+        // Send file
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.send(buffer);
+
+    } catch (error) {
+        console.error('❌ Error exporting monthly summary:', error);
+        res.status(500).json({ error: 'Failed to generate monthly summary' });
+    }
 }
 
 // TODO: Export statistics report
@@ -118,3 +195,4 @@ export async function exportPayrollReport(req, res, pool) {
 export async function exportCustomReport(req, res, pool) {
     res.status(501).json({ error: 'Not implemented yet' });
 }
+

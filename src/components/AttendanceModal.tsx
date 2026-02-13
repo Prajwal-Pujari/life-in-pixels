@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CalibrationExpenseModal from './CalibrationExpenseModal';
 
 interface AttendanceModalProps {
     isOpen: boolean;
@@ -7,6 +8,7 @@ interface AttendanceModalProps {
     token: string;
     userRole: 'admin' | 'employee';
     userId?: number;
+    userDepartment?: string;
 }
 
 type AttendanceStatus = 'present' | 'absent' | 'half_day' | 'wfh' | 'on_leave';
@@ -27,7 +29,8 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
     date,
     token,
     userRole,
-    userId
+    userId,
+    userDepartment
 }) => {
     const [attendance, setAttendance] = useState<AttendanceData>({
         status: 'present',
@@ -41,6 +44,9 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [existingAttendance, setExistingAttendance] = useState<AttendanceData | null>(null);
+    const [isSiteVisit, setIsSiteVisit] = useState(false);
+    const [showExpenseModal, setShowExpenseModal] = useState(false);
+    const [attendanceId, setAttendanceId] = useState<number | null>(null);
 
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -138,8 +144,16 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
                 throw new Error(data.error || 'Failed to mark attendance');
             }
 
-            onClose();
-            window.location.reload(); // Refresh to show updated calendar
+            const result = await response.json();
+
+            // If calibration employee marked as site visit, open expense modal
+            if (isSiteVisit && userDepartment === 'Calibration') {
+                setAttendanceId(result.id || existingAttendance?.id || null);
+                setShowExpenseModal(true);
+            } else {
+                onClose();
+                window.location.reload(); // Refresh to show updated calendar
+            }
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -276,6 +290,45 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
                         />
                     </div>
 
+                    {/* Site Visit Option for Calibration Department */}
+                    {userDepartment === 'Calibration' && (attendance.status === 'present' || attendance.status === 'wfh') && (
+                        <div className="form-group" style={{
+                            background: 'var(--day-today)',
+                            border: '3px solid var(--border)',
+                            padding: '1rem',
+                            marginTop: '1rem'
+                        }}>
+                            <label style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                cursor: canEdit() ? 'pointer' : 'not-allowed',
+                                fontSize: '0.6rem',
+                                letterSpacing: '1px'
+                            }}>
+                                <input
+                                    type="checkbox"
+                                    checked={isSiteVisit}
+                                    onChange={(e) => setIsSiteVisit(e.target.checked)}
+                                    disabled={!canEdit()}
+                                    style={{ width: '20px', height: '20px', cursor: canEdit() ? 'pointer' : 'not-allowed' }}
+                                />
+                                <span>🔧 SITE VISIT (Add expenses after marking)</span>
+                            </label>
+                            {isSiteVisit && (
+                                <p style={{
+                                    marginTop: '0.75rem',
+                                    fontSize: '0.5rem',
+                                    color: 'var(--text-secondary)',
+                                    fontFamily: 'Courier New, monospace',
+                                    lineHeight: '1.6'
+                                }}>
+                                    ℹ️ You'll be able to add location, company, gauges, and itemized expenses (cab, food, etc.) after marking attendance.
+                                </p>
+                            )}
+                        </div>
+                    )}
+
                     <div className="modal-actions">
                         <button
                             type="button"
@@ -294,6 +347,25 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
                     </div>
                 </form>
             </div>
+
+            {/* Calibration Expense Modal */}
+            {showExpenseModal && attendanceId && date && (
+                <CalibrationExpenseModal
+                    isOpen={showExpenseModal}
+                    onClose={() => {
+                        setShowExpenseModal(false);
+                        onClose();
+                        window.location.reload();
+                    }}
+                    date={`${date.year}-${String(date.month + 1).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`}
+                    attendanceId={attendanceId}
+                    onSuccess={() => {
+                        setShowExpenseModal(false);
+                        onClose();
+                        window.location.reload();
+                    }}
+                />
+            )}
         </div>
     );
 };

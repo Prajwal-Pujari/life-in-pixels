@@ -32,6 +32,22 @@ import {
     exportPayrollReport,
     exportCustomReport
 } from './exports/export-routes.js';
+import {
+    isCalibrationDept,
+    createSiteVisit,
+    getSiteVisitByDate,
+    updateSiteVisit,
+    addExpense,
+    updateExpense,
+    deleteExpense,
+    submitForApproval,
+    getAutocompleteSuggestions,
+    getPendingApprovals,
+    getExpenseHistory,
+    approveExpense,
+    rejectExpense
+} from './calibration-routes.js';
+import { setupTaskRoutes, processTaskReminders } from './task-routes.js';
 
 dotenv.config();
 
@@ -68,9 +84,32 @@ initializePassport();
 
 // ==================== MIDDLEWARE ====================
 
-// CORS configuration
+// CORS configuration - supports multiple origins for local network development
+const allowedOrigins = [
+    process.env.FRONTEND_URL || 'http://localhost:3000',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
+];
+
+// Add local network IPs dynamically
+const localIP = process.env.LOCAL_IP;
+if (localIP) {
+    allowedOrigins.push(`http://${localIP}:3000`);
+}
+
 const corsOptions = {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps, curl, Postman)
+        if (!origin) return callback(null, true);
+
+        // Check if origin is in allowed list or matches local network pattern
+        if (allowedOrigins.includes(origin) || /^http:\/\/192\.168\.\d+\.\d+:\d+$/.test(origin)) {
+            callback(null, true);
+        } else {
+            console.log('⚠️ CORS blocked origin:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     optionsSuccessStatus: 200
 };
@@ -100,7 +139,12 @@ initializeTelegramBot();
 
 // Initialize Telegram commands with database pool (after connection)
 const { initializeTelegramCommands } = await import('./telegram-commands.js');
-initializeTelegramCommands(pool);
+await initializeTelegramCommands(pool);
+
+// Initialize scheduled jobs for Telegram
+const { initializeScheduledJobs, sendCheckoutReminders, cleanupExpiredCodes, sendAnniversaryNotifications } = await import('./telegram-scheduled-jobs.js');
+const { bot } = await import('./telegram-bot.js');
+initializeScheduledJobs(pool, bot);
 
 // Schedule daily Telegram report at 7:00 PM (19:00)
 if (process.env.TELEGRAM_ENABLED === 'true') {
@@ -120,6 +164,42 @@ if (process.env.TELEGRAM_ENABLED === 'true') {
         timezone: 'Asia/Kolkata' // Indian Standard Time
     });
     console.log('✅ Scheduled daily report at 7:00 PM IST');
+
+    // Schedule checkout reminder at 6:30 PM
+    const reminderTime = process.env.TELEGRAM_CHECKOUT_REMINDER_TIME || '18:30';
+    const [reminderHour, reminderMinute] = reminderTime.split(':').map(Number);
+    cron.schedule(`${reminderMinute} ${reminderHour} * * 1-5`, async () => {
+        console.log('⏰ Sending checkout reminders...');
+        await sendCheckoutReminders();
+    }, {
+        timezone: 'Asia/Kolkata'
+    });
+    console.log(`✅ Scheduled checkout reminders at ${reminderTime} IST (weekdays)`);
+
+    // Schedule work anniversary notifications at 9:00 AM daily
+    cron.schedule('0 9 * * *', async () => {
+        console.log('🎂 Checking for work anniversaries...');
+        await sendAnniversaryNotifications();
+    }, {
+        timezone: 'Asia/Kolkata'
+    });
+    console.log('✅ Scheduled anniversary notifications at 9:00 AM IST');
+
+    // Schedule cleanup of expired verification codes every hour
+    cron.schedule('0 * * * *', async () => {
+        await cleanupExpiredCodes();
+    }, {
+        timezone: 'Asia/Kolkata'
+    });
+
+    // Schedule task reminders every 15 minutes
+    cron.schedule('*/15 * * * *', async () => {
+        console.log('⏰ Processing task reminders...');
+        await processTaskReminders(pool, bot);
+    }, {
+        timezone: 'Asia/Kolkata'
+    });
+    console.log('✅ Scheduled task reminders every 15 minutes');
 }
 
 // Rate limiters
@@ -131,7 +211,7 @@ const authLimiter = rateLimit({
 
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 500, // Increased from 100 to support task management operations
     message: { error: 'Too many requests, please try again later' }
 });
 
@@ -256,7 +336,7 @@ app.get('/api/admin/users', authenticateToken, isAdmin, async (req, res) => {
     try {
         const result = await pool.query(
             `SELECT id, username, email, full_name, role, employee_id, department, 
-              is_active, created_at, last_login, avatar_url, google_id
+              is_active, created_at, last_login, avatar_url, google_id, joining_date, telegram_chat_id
        FROM users 
        ORDER BY created_at DESC`
         );
@@ -273,7 +353,9 @@ app.get('/api/admin/users', authenticateToken, isAdmin, async (req, res) => {
             createdAt: user.created_at,
             lastLogin: user.last_login,
             avatarUrl: user.avatar_url,
-            authMethod: user.google_id ? 'google' : 'password'
+            authMethod: user.google_id ? 'google' : 'password',
+            joiningDate: user.joining_date,
+            telegramId: user.telegram_chat_id
         }));
 
         res.json(users);
@@ -432,6 +514,89 @@ app.put('/api/admin/users/:id/activate', authenticateToken, isAdmin, async (req,
     }
 });
 
+// Update user's Telegram ID (admin only)
+app.put('/api/admin/users/:id/telegram', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { telegramId } = req.body;
+
+        // Validate telegram_id
+        if (telegramId && (!Number.isInteger(telegramId) || telegramId <= 0)) {
+            return res.status(400).json({ error: 'Invalid Telegram ID' });
+        }
+
+        // Check if telegram_id is already in use
+        if (telegramId) {
+            const existing = await pool.query(
+                'SELECT id, full_name FROM users WHERE telegram_id = $1 AND id != $2',
+                [telegramId, userId]
+            );
+
+            if (existing.rows.length > 0) {
+                return res.status(409).json({
+                    error: `Telegram ID already linked to ${existing.rows[0].full_name}`
+                });
+            }
+        }
+
+        // Update telegram_id
+        await pool.query(
+            'UPDATE users SET telegram_id = $1 WHERE id = $2',
+            [telegramId || null, userId]
+        );
+
+        // Log activity
+        const userResult = await pool.query('SELECT full_name FROM users WHERE id = $1', [userId]);
+        await pool.query(
+            'INSERT INTO activity_log (user_id, action_type, action_details) VALUES ($1, $2, $3)',
+            [req.user.id, 'update_telegram', `Updated Telegram ID for ${userResult.rows[0].full_name}`]
+        );
+
+        console.log(`✅ Admin ${req.user.username} updated Telegram ID for user ${userId}`);
+
+        res.json({ success: true, message: 'Telegram ID updated successfully' });
+    } catch (error) {
+        console.error('❌ Error updating Telegram ID:', error);
+        res.status(500).json({ error: 'Failed to update Telegram ID' });
+    }
+});
+
+// Update user's department (admin only)
+app.put('/api/admin/users/:id/department', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { department } = req.body;
+
+        // Get user info before updating
+        const userResult = await pool.query('SELECT full_name, department as old_department FROM users WHERE id = $1', [userId]);
+
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const user = userResult.rows[0];
+
+        // Update department
+        await pool.query(
+            'UPDATE users SET department = $1 WHERE id = $2',
+            [department || null, userId]
+        );
+
+        // Log activity
+        await pool.query(
+            'INSERT INTO activity_log (user_id, action_type, action_details) VALUES ($1, $2, $3)',
+            [req.user.id, 'update_department', `Updated ${user.full_name}'s department from "${user.old_department || 'none'}" to "${department || 'none'}"`]
+        );
+
+        console.log(`✅ Admin ${req.user.username} updated department for ${user.full_name}: ${user.old_department || 'none'} → ${department || 'none'}`);
+
+        res.json({ success: true, message: 'Department updated successfully' });
+    } catch (error) {
+        console.error('❌ Error updating department:', error);
+        res.status(500).json({ error: 'Failed to update department' });
+    }
+});
+
 // ==================== ATTENDANCE ROUTES ====================
 
 // Get attendance records
@@ -484,6 +649,36 @@ app.post('/api/admin/export/payroll', authenticateToken, isAdmin, (req, res) => 
 
 // Custom date range report
 app.post('/api/admin/export/custom', authenticateToken, isAdmin, (req, res) => exportCustomReport(req, res, pool));
+
+// ==================== CALIBRATION EXPENSE ROUTES ====================
+
+// Employee routes (Calibration department only)
+app.post('/api/calibration/site-visit', authenticateToken, isCalibrationDept, (req, res) => createSiteVisit(req, res, pool));
+app.get('/api/calibration/site-visit/:date', authenticateToken, isCalibrationDept, (req, res) => getSiteVisitByDate(req, res, pool));
+app.put('/api/calibration/site-visit/:id', authenticateToken, isCalibrationDept, (req, res) => updateSiteVisit(req, res, pool));
+app.post('/api/calibration/site-visit/:id/expenses', authenticateToken, isCalibrationDept, (req, res) => addExpense(req, res, pool));
+app.put('/api/calibration/expenses/:id', authenticateToken, isCalibrationDept, (req, res) => updateExpense(req, res, pool));
+app.delete('/api/calibration/expenses/:id', authenticateToken, isCalibrationDept, (req, res) => deleteExpense(req, res, pool));
+app.post('/api/calibration/site-visit/:id/submit', authenticateToken, isCalibrationDept, (req, res) => submitForApproval(req, res, pool));
+app.get('/api/calibration/autocomplete', authenticateToken, isCalibrationDept, (req, res) => getAutocompleteSuggestions(req, res, pool));
+
+// Admin routes
+app.get('/api/admin/calibration/pending', authenticateToken, isAdmin, (req, res) => getPendingApprovals(req, res, pool));
+app.get('/api/admin/calibration/history', authenticateToken, isAdmin, (req, res) => getExpenseHistory(req, res, pool));
+app.put('/api/admin/calibration/approve/:id', authenticateToken, isAdmin, (req, res) => approveExpense(req, res, pool));
+app.put('/api/admin/calibration/reject/:id', authenticateToken, isAdmin, (req, res) => rejectExpense(req, res, pool));
+
+// ==================== SALARY & PAYMENT TRACKING ROUTES ====================
+
+import salaryRouter, { setSalaryPool } from './salary-routes.js';
+setSalaryPool(pool);
+app.use('/api/salary', authenticateToken, salaryRouter);
+
+// ==================== TASK MANAGEMENT ROUTES ====================
+
+// Initialize task routes with pool, middleware, and telegram bot
+setupTaskRoutes(app, pool, authenticateToken, isAdmin, bot);
+
 
 // ==================== JOURNAL/WORK LOGS ROUTES ====================
 

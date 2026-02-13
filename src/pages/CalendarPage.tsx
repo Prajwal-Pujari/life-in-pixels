@@ -5,6 +5,9 @@ import TimeCounter from '../components/TimeCounter';
 import AttendanceModal from '../components/AttendanceModal';
 import MonthlySummaryModal from '../components/MonthlySummaryModal';
 import JournalPageView from '../components/JournalPageView';
+import TaskModal from '../components/TaskModal';
+import TaskDashboard from '../components/TaskDashboard';
+import '../task-styles.css';
 
 interface CalendarPageProps {
     token: string;
@@ -52,6 +55,12 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ token, user, onLogout }) =>
     const [isPageViewOpen, setIsPageViewOpen] = useState(false);
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const [viewingUserId, setViewingUserId] = useState<number | null>(null);
+    const [tasks, setTasks] = useState<Record<string, any[]>>({});
+    const [isTaskDashboardOpen, setIsTaskDashboardOpen] = useState(false);
+    const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+    const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
+    const [taskDate, setTaskDate] = useState<{ year: number; month: number; day: number } | null>(null);
+    const [employees, setEmployees] = useState<any[]>([]);
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
@@ -77,7 +86,11 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ token, user, onLogout }) =>
         loadEntries();
         loadHolidays();
         loadAttendance();
-    }, [viewingUserId]);
+        loadTasks();
+        if (user.role === 'admin') {
+            loadEmployees();
+        }
+    }, [viewingUserId, currentDate]);
 
     const loadEntries = async () => {
         try {
@@ -165,6 +178,62 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ token, user, onLogout }) =>
         } catch (error) {
             console.error('Error loading attendance:', error);
         }
+    };
+
+    const loadTasks = async () => {
+        try {
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+            const response = await fetch(`${API_URL}/tasks/calendar?month=${year}-${month}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                const tasksMap: Record<string, any[]> = {};
+                data.forEach((task: any) => {
+                    if (task.due_date) {
+                        const dateKey = task.due_date.split('T')[0];
+                        if (!tasksMap[dateKey]) tasksMap[dateKey] = [];
+                        tasksMap[dateKey].push(task);
+                    }
+                });
+                setTasks(tasksMap);
+            }
+        } catch (error) {
+            console.error('Error loading tasks:', error);
+        }
+    };
+
+    const loadEmployees = async () => {
+        try {
+            const response = await fetch(`${API_URL}/admin/employees`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setEmployees(data);
+            }
+        } catch (error) {
+            console.error('Error loading employees:', error);
+        }
+    };
+
+    const handleTaskClick = (taskId: number) => {
+        setSelectedTaskId(taskId);
+        setTaskDate(null);
+        setIsTaskModalOpen(true);
+        setIsTaskDashboardOpen(false);
+    };
+
+    const handleNewTask = () => {
+        setSelectedTaskId(null);
+        setTaskDate(null);
+        setIsTaskModalOpen(true);
+        setIsTaskDashboardOpen(false);
+    };
+
+    const handleTaskSaved = () => {
+        loadTasks();
     };
 
     const handleDayClick = (year: number, month: number, day: number) => {
@@ -313,6 +382,14 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ token, user, onLogout }) =>
                         <span className="btn-emoji">📖</span>
                         VIEW JOURNAL
                     </button>
+
+                    <button
+                        className="btn-tasks"
+                        onClick={() => setIsTaskDashboardOpen(true)}
+                    >
+                        <span className="btn-emoji">📋</span>
+                        MY TASKS
+                    </button>
                 </div>
 
                 <div className="right-section">
@@ -322,6 +399,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ token, user, onLogout }) =>
                             entries={entries}
                             holidays={holidays}
                             attendance={attendance}
+                            tasks={tasks}
                             onDayClick={handleDayClick}
                         />
                     </div>
@@ -335,6 +413,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ token, user, onLogout }) =>
                 token={token}
                 userRole={user.role}
                 userId={viewingUserId || undefined}
+                userDepartment={user.department}
             />
 
             <JournalPageView
@@ -351,6 +430,26 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ token, user, onLogout }) =>
                 year={currentDate.getFullYear()}
                 month={currentDate.getMonth()}
             />
+
+            <TaskDashboard
+                isOpen={isTaskDashboardOpen}
+                onClose={() => setIsTaskDashboardOpen(false)}
+                token={token}
+                onTaskClick={handleTaskClick}
+                onNewTask={handleNewTask}
+            />
+
+            {user.role === 'admin' && (
+                <TaskModal
+                    isOpen={isTaskModalOpen}
+                    onClose={() => setIsTaskModalOpen(false)}
+                    token={token}
+                    date={taskDate}
+                    taskId={selectedTaskId}
+                    onTaskSaved={handleTaskSaved}
+                    employees={employees}
+                />
+            )}
         </div>
     );
 };

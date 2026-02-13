@@ -1,0 +1,696 @@
+/* ============================================================
+   CALIBRATION EXPENSE MODAL STYLES - Matching App Theme
+   ============================================================ */
+
+.calibration-modal {
+    background: var(--bg-primary);
+    border: 4px solid var(--border);
+    padding: 0;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    font-family: 'Press Start 2P', monospace;
+    box-shadow: 0 8px 0 var(--border);
+}
+
+.calibration-modal .modal-header {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid var(--border);
+}
+
+.calibration-modal .modal-header h2 {
+    font-size: 0.9rem;
+    margin: 0;
+    letter-spacing: 2px;
+}
+
+.calibration-modal .close-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    padding: 0;
+    line-height: 1;
+}
+
+.calibration-modal .modal-body {
+    padding: 1.5rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.calibration-modal .modal-footer {
+    background: var(--bg-secondary);
+    border-top: 3px solid var(--border);
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+/* Site Details Section */
+.site-details-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border: 3px solid var(--border);
+    background: var(--bg-secondary);
+}
+
+.site-details-section h3 {
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    color: var(--text-primary);
+    font-size: 0.55rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    background: var(--bg-primary);
+    border: 3px solid var(--border);
+    color: var(--text-primary);
+    padding: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent-today);
+    box-shadow: 0 0 0 2px rgba(255, 181, 197, 0.2);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Expenses Section */
+.expenses-section {
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    border: 3px solid var(--border);
+    background: var(--bg-secondary);
+}
+
+.expenses-section h3 {
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.expenses-list {
+    margin-bottom: 1rem;
+}
+
+.expense-row {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 2.5fr 2fr 50px;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+.expense-field input {
+    width: 100%;
+    background: var(--bg-primary);
+    border: 3px solid var(--border);
+    color: var(--text-primary);
+    padding: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    box-sizing: border-box;
+}
+
+.expense-field input:focus {
+    outline: none;
+    border-color: var(--accent-today);
+    box-shadow: 0 0 0 2px rgba(255, 181, 197, 0.2);
+}
+
+.expense-field input::placeholder {
+    color: var(--text-muted);
+}
+
+.remove-expense-btn {
+    background: #ff6b6b;
+    border: 3px solid var(--border);
+    color: white;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    box-shadow: 0 3px 0 var(--border);
+    transition: all 0.2s;
+    font-family: 'Press Start 2P', monospace;
+}
+
+.remove-expense-btn:hover:not(:disabled) {
+    background: #ff5252;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 0 var(--border);
+}
+
+.remove-expense-btn:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 2px 0 var(--border);
+}
+
+.remove-expense-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.add-expense-btn {
+    background: var(--bg-primary);
+    border: 3px solid var(--border);
+    color: var(--text-primary);
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    width: 100%;
+    box-shadow: 0 4px 0 var(--border);
+    transition: all 0.2s;
+    margin-bottom: 1rem;
+    letter-spacing: 1px;
+}
+
+.add-expense-btn:hover {
+    background: var(--bg-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border);
+}
+
+.add-expense-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--border);
+}
+
+.expense-total {
+    text-align: right;
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    padding: 1rem;
+    border-top: 3px solid var(--border);
+    margin-top: 1rem;
+    font-family: 'Press Start 2P', monospace;
+    background: var(--bg-primary);
+    letter-spacing: 1px;
+}
+
+/* Buttons */
+.btn-primary,
+.btn-secondary,
+.btn-cancel {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.6rem;
+    padding: 1rem 1.5rem;
+    border: 3px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 0 var(--border);
+    letter-spacing: 1px;
+}
+
+.btn-primary {
+    background: var(--success-green);
+    color: white;
+    border-color: var(--border);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #22c55e;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border);
+}
+
+.btn-primary:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--border);
+}
+
+.btn-secondary {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border-color: var(--border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--bg-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border);
+}
+
+.btn-secondary:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--border);
+}
+
+.btn-cancel {
+    background: #ff6b6b;
+    color: white;
+    border-color: var(--border);
+}
+
+.btn-cancel:hover:not(:disabled) {
+    background: #ff5252;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border);
+}
+
+.btn-cancel:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--border);
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-cancel:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Error Message */
+.error-message {
+    background: #ff6b6b;
+    color: white;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border: 3px solid var(--border);
+    font-size: 0.55rem;
+    letter-spacing: 1px;
+}
+
+/* ============================================================
+   CALIBRATION APPROVAL PANEL STYLES
+   ============================================================ */
+
+.calibration-approval-panel {
+    background: var(--bg-primary);
+    border: 4px solid var(--border);
+    padding: 2rem;
+    font-family: 'Press Start 2P', monospace;
+    min-height: 400px;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 3px solid var(--border);
+}
+
+.panel-header h2 {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    margin: 0;
+    letter-spacing: 2px;
+}
+
+.stats {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.stat-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    background: var(--bg-secondary);
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border);
+}
+
+.stat-label {
+    color: var(--text-muted);
+    font-size: 0.45rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+/* Approval Cards */
+.approvals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.approval-card {
+    background: var(--bg-secondary);
+    border: 3px solid var(--border);
+    overflow: hidden;
+    box-shadow: 0 4px 0 var(--border);
+}
+
+.approval-summary {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.approval-summary:hover {
+    background: var(--day-past);
+}
+
+.approval-info h3 {
+    color: var(--text-primary);
+    font-size: 0.65rem;
+    margin: 0 0 1rem 0;
+    letter-spacing: 1px;
+}
+
+.approval-meta {
+    color: var(--text-secondary);
+    font-size: 0.5rem;
+    margin: 0 0 0.75rem 0;
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.approval-gauges {
+    color: var(--text-muted);
+    font-size: 0.45rem;
+    margin: 0;
+}
+
+.approval-amount {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    background: var(--accent-today);
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border);
+}
+
+.amount-label {
+    color: var(--text-secondary);
+    font-size: 0.45rem;
+    margin-bottom: 0.5rem;
+}
+
+.amount-value {
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+.expand-icon {
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+}
+
+/* Approval Details */
+.approval-details {
+    padding: 1.5rem;
+    border-top: 3px solid var(--border);
+    background: var(--bg-primary);
+}
+
+.detail-section {
+    margin-bottom: 1.5rem;
+}
+
+.detail-section h4 {
+    color: var(--text-primary);
+    font-size: 0.55rem;
+    margin: 0 0 0.75rem 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.detail-section p {
+    color: var(--text-secondary);
+    font-size: 0.5rem;
+    line-height: 1.6;
+    margin: 0;
+    font-family: 'Courier New', monospace;
+}
+
+.submitted-info {
+    color: var(--text-muted);
+    font-size: 0.45rem;
+}
+
+/* Approval Actions */
+.approval-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--border);
+}
+
+.btn-approve {
+    background: var(--success-green);
+    color: white;
+    border: 3px solid var(--border);
+    padding: 1rem 1.5rem;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.6rem;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--border);
+    transition: all 0.2s;
+    flex: 1;
+    letter-spacing: 1px;
+}
+
+.btn-approve:hover {
+    background: #22c55e;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border);
+}
+
+.btn-approve:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--border);
+}
+
+.btn-reject {
+    background: #ff6b6b;
+    color: white;
+    border: 3px solid var(--border);
+    padding: 1rem 1.5rem;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.6rem;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--border);
+    transition: all 0.2s;
+    flex: 1;
+    letter-spacing: 1px;
+}
+
+.btn-reject:hover {
+    background: #ff5252;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border);
+}
+
+.btn-reject:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--border);
+}
+
+/* Reject Dialog */
+.reject-dialog {
+    margin-top: 1.25rem;
+    padding: 1.25rem;
+    border: 3px solid #ff6b6b;
+    background: var(--bg-secondary);
+}
+
+.reject-dialog h4 {
+    color: #ff6b6b;
+    font-size: 0.55rem;
+    margin: 0 0 1rem 0;
+    letter-spacing: 1px;
+}
+
+.reject-dialog textarea {
+    width: 100%;
+    background: var(--bg-primary);
+    border: 3px solid var(--border);
+    color: var(--text-primary);
+    padding: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    box-sizing: border-box;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.reject-dialog textarea:focus {
+    outline: none;
+    border-color: #ff6b6b;
+    box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
+}
+
+.dialog-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.btn-submit-reject {
+    background: #ff6b6b;
+    color: white;
+    border: 3px solid var(--border);
+    padding: 0.85rem 1.25rem;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--border);
+    transition: all 0.2s;
+    flex: 1;
+    letter-spacing: 1px;
+}
+
+.btn-submit-reject:hover {
+    background: #ff5252;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border);
+}
+
+.btn-submit-reject:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--border);
+}
+
+.btn-cancel-reject {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 3px solid var(--border);
+    padding: 0.85rem 1.25rem;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--border);
+    transition: all 0.2s;
+    flex: 1;
+    letter-spacing: 1px;
+}
+
+.btn-cancel-reject:hover {
+    background: var(--bg-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--border);
+}
+
+.btn-cancel-reject:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--border);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+}
+
+/* Loading */
+.loading {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-primary);
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .expense-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .remove-expense-btn {
+        width: 100%;
+        height: 50px;
+    }
+
+    .approval-summary {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .approval-amount,
+    .expand-icon {
+        justify-self: start;
+    }
+
+    .stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+
+    .calibration-modal .modal-footer {
+        flex-direction: column;
+    }
+
+    .calibration-modal .modal-footer button {
+        width: 100%;
+    }
+}

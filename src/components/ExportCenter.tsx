@@ -21,6 +21,8 @@ const ExportCenter: React.FC<ExportCenterProps> = ({ token, onClose }) => {
     const [selectedEmployee, setSelectedEmployee] = useState<number>(0);
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
+    const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+    const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
 
@@ -108,6 +110,83 @@ const ExportCenter: React.FC<ExportCenterProps> = ({ token, onClose }) => {
         }
     };
 
+    const handleExportBulk = async () => {
+        if (!startDate || !endDate) {
+            setMessage('❌ Please fill all fields');
+            return;
+        }
+
+        setLoading(true);
+        setMessage('');
+
+        try {
+            const response = await fetch(`${API_URL}/admin/export/bulk`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ startDate, endDate })
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = response.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || 'bulk_report.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+                setMessage('✅ Bulk report downloaded successfully!');
+            } else {
+                const error = await response.json();
+                setMessage(`❌ Error: ${error.error}`);
+            }
+        } catch (error: any) {
+            setMessage(`❌ Error: ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleExportMonthlySummary = async () => {
+        setLoading(true);
+        setMessage('');
+
+        try {
+            const response = await fetch(`${API_URL}/admin/export/monthly-summary`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ year: selectedYear, month: selectedMonth })
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = response.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || 'monthly_summary.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+                setMessage('✅ Monthly summary downloaded successfully!');
+            } else {
+                const error = await response.json();
+                setMessage(`❌ Error: ${error.error}`);
+            }
+        } catch (error: any) {
+            setMessage(`❌ Error: ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content export-center-modal" onClick={(e) => e.stopPropagation()}>
@@ -127,16 +206,14 @@ const ExportCenter: React.FC<ExportCenterProps> = ({ token, onClose }) => {
                                 Individual Employee
                             </button>
                             <button
-                                className="report-type-btn disabled"
-                                disabled
-                                title="Coming soon!"
+                                className={`report-type-btn ${reportType === 'bulk' ? 'active' : ''}`}
+                                onClick={() => setReportType('bulk')}
                             >
                                 Bulk Export
                             </button>
                             <button
-                                className="report-type-btn disabled"
-                                disabled
-                                title="Coming soon!"
+                                className={`report-type-btn ${reportType === 'monthly' ? 'active' : ''}`}
+                                onClick={() => setReportType('monthly')}
                             >
                                 Monthly Summary
                             </button>
@@ -197,17 +274,127 @@ const ExportCenter: React.FC<ExportCenterProps> = ({ token, onClose }) => {
                         </div>
                     )}
 
+                    {reportType === 'bulk' && (
+                        <div className="export-form">
+                            <div className="form-group">
+                                <label>📅 Date Range:</label>
+                                <div className="date-range">
+                                    <input
+                                        type="date"
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                        className="export-input"
+                                    />
+                                    <span>to</span>
+                                    <input
+                                        type="date"
+                                        value={endDate}
+                                        onChange={(e) => setEndDate(e.target.value)}
+                                        className="export-input"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="export-actions">
+                                <button
+                                    onClick={handleExportBulk}
+                                    disabled={loading}
+                                    className="btn-export"
+                                >
+                                    {loading ? '⏳ Generating...' : '📥 EXPORT ALL EMPLOYEES'}
+                                </button>
+                            </div>
+
+                            {message && (
+                                <div className={`export-message ${message.includes('✅') ? 'success' : 'error'}`}>
+                                    {message}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {reportType === 'monthly' && (
+                        <div className="export-form">
+                            <div className="form-group">
+                                <label>📅 Select Month:</label>
+                                <div className="date-range">
+                                    <select
+                                        value={selectedMonth}
+                                        onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                                        className="export-select"
+                                    >
+                                        {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                                            <option key={month} value={month}>
+                                                {new Date(2024, month - 1, 1).toLocaleDateString('en-US', { month: 'long' })}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <select
+                                        value={selectedYear}
+                                        onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                                        className="export-select"
+                                    >
+                                        {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map(year => (
+                                            <option key={year} value={year}>{year}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="export-actions">
+                                <button
+                                    onClick={handleExportMonthlySummary}
+                                    disabled={loading}
+                                    className="btn-export"
+                                >
+                                    {loading ? '⏳ Generating...' : '📥 EXPORT MONTHLY SUMMARY'}
+                                </button>
+                            </div>
+
+                            {message && (
+                                <div className={`export-message ${message.includes('✅') ? 'success' : 'error'}`}>
+                                    {message}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     <div className="export-info">
-                        <h4>📊 Individual Employee Report Includes:</h4>
-                        <ul>
-                            <li>✅ Employee profile & details</li>
-                            <li>✅ Daily attendance breakdown</li>
-                            <li>✅ Summary statistics (Present, WFH, Leave, Absent)</li>
-                            <li>✅ Average hours & total hours worked</li>
-                            <li>✅ Punctuality score</li>
-                            <li>✅ Color-coded status cells</li>
-                            <li>✅ Professional Excel formatting</li>
-                        </ul>
+                        {reportType === 'individual' && (
+                            <>
+                                <h4>📊 Individual Employee Report Includes:</h4>
+                                <ul>
+                                    <li>✅ Employee profile & details</li>
+                                    <li>✅ Daily attendance breakdown</li>
+                                    <li>✅ Summary statistics</li>
+                                    <li>✅ Hours & punctuality score</li>
+                                    <li>✅ Orange-themed formatting</li>
+                                </ul>
+                            </>
+                        )}
+                        {reportType === 'bulk' && (
+                            <>
+                                <h4>📊 Bulk Export Includes:</h4>
+                                <ul>
+                                    <li>✅ Summary sheet with all employees</li>
+                                    <li>✅ Individual sheet per employee</li>
+                                    <li>✅ Complete attendance breakdown</li>
+                                    <li>✅ Orange-themed formatting</li>
+                                </ul>
+                            </>
+                        )}
+                        {reportType === 'monthly' && (
+                            <>
+                                <h4>📊 Monthly Summary Includes:</h4>
+                                <ul>
+                                    <li>✅ Matrix view (employees × days)</li>
+                                    <li>✅ Color-coded attendance status</li>
+                                    <li>✅ Statistics per employee</li>
+                                    <li>✅ Legend with status codes</li>
+                                    <li>✅ Orange-themed formatting</li>
+                                </ul>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

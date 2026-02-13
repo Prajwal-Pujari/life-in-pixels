@@ -4,6 +4,7 @@ import { setupCommandHandlers } from './telegram-commands.js';
 
 let bot = null;
 
+
 // Initialize Telegram Bot
 export function initializeTelegramBot() {
     const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -20,6 +21,12 @@ export function initializeTelegramBot() {
     }
 
     try {
+        // Stop existing bot if running
+        if (bot) {
+            console.log('🔄 Stopping existing bot...');
+            bot.stopPolling();
+        }
+
         // Create bot instance with polling enabled for interactive commands
         bot = new TelegramBot(token, { polling: true });
 
@@ -33,6 +40,12 @@ export function initializeTelegramBot() {
         console.error('❌ Error initializing Telegram bot:', error.message);
         return null;
     }
+}
+
+// Restart bot to clear polling cache
+export function restartTelegramBot() {
+    console.log('🔄 Restarting Telegram bot to clear cache...');
+    return initializeTelegramBot();
 }
 
 // Send message to Telegram

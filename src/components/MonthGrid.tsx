@@ -1,15 +1,24 @@
 import React from 'react';
 import DayBox from './DayBox';
 
+interface Task {
+  id: number;
+  title: string;
+  priority: string;
+  status: string;
+}
+
 interface MonthGridProps {
   currentDate: Date;
   entries: Record<string, any>;
   holidays: Record<string, string>;
   attendance: Record<string, string>;
+  tasks?: Record<string, Task[]>;
   onDayClick: (year: number, month: number, day: number) => void;
+  onTaskClick?: (taskId: number) => void;
 }
 
-const MonthGrid: React.FC<MonthGridProps> = ({ currentDate, onDayClick, entries, holidays, attendance }) => {
+const MonthGrid: React.FC<MonthGridProps> = ({ currentDate, onDayClick, entries, holidays, attendance, tasks = {}, onTaskClick }) => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const today = new Date();
@@ -47,6 +56,11 @@ const MonthGrid: React.FC<MonthGridProps> = ({ currentDate, onDayClick, entries,
     return attendance[key];
   };
 
+  const getTasksForDay = (day: number): Task[] => {
+    const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    return tasks[key] || [];
+  };
+
   const days = [];
 
   // Add placeholder boxes for days before month starts
@@ -56,6 +70,7 @@ const MonthGrid: React.FC<MonthGridProps> = ({ currentDate, onDayClick, entries,
 
   // Add actual day boxes
   for (let day = 1; day <= daysInMonth; day++) {
+    const dayTasks = getTasksForDay(day);
     days.push(
       <DayBox
         key={day}
@@ -64,6 +79,8 @@ const MonthGrid: React.FC<MonthGridProps> = ({ currentDate, onDayClick, entries,
         hasEntry={hasEntry(day)}
         holidayName={getHolidayName(day)}
         attendanceStatus={getAttendanceStatus(day)}
+        taskCount={dayTasks.length}
+        hasUrgentTask={dayTasks.some(t => t.priority === 'urgent')}
         onClick={() => onDayClick(year, month, day)}
       />
     );

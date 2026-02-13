@@ -9,6 +9,8 @@ interface User {
     employeeId: string;
     department: string;
     isActive: boolean;
+    telegramId?: number | null;
+    joiningDate?: string | null;
 }
 
 interface UserManagementProps {
@@ -22,6 +24,12 @@ const UserManagement: React.FC<UserManagementProps> = ({ token, onClose }) => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [showCreateForm, setShowCreateForm] = useState(false);
+    const [editingTelegramId, setEditingTelegramId] = useState<number | null>(null);
+    const [telegramIdInput, setTelegramIdInput] = useState('');
+    const [editingDepartment, setEditingDepartment] = useState<number | null>(null);
+    const [departmentInput, setDepartmentInput] = useState('');
+    const [editingJoiningDate, setEditingJoiningDate] = useState<number | null>(null);
+    const [joiningDateInput, setJoiningDateInput] = useState('');
 
     // Form state
     const [formData, setFormData] = useState({
@@ -116,6 +124,96 @@ const UserManagement: React.FC<UserManagementProps> = ({ token, onClose }) => {
         } catch (err: any) {
             setError(err.message);
         }
+    };
+
+    const handleUpdateTelegramId = async (userId: number) => {
+        const telegramId = telegramIdInput ? parseInt(telegramIdInput) : null;
+
+        if (telegramIdInput && (isNaN(Number(telegramIdInput)) || Number(telegramIdInput) <= 0)) {
+            setError('Invalid Telegram ID. Must be a positive number.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/admin/users/${userId}/telegram`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ telegramId })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to update Telegram ID');
+            }
+
+            setSuccess('Telegram ID updated successfully');
+            setEditingTelegramId(null);
+            setTelegramIdInput('');
+            fetchUsers();
+        } catch (err: any) {
+            setError(err.message);
+        }
+    };
+
+    const handleUpdateDepartment = async (userId: number) => {
+        try {
+            const response = await fetch(`${API_URL}/admin/users/${userId}/department`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ department: departmentInput || null })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to update department');
+            }
+
+            setSuccess('Department updated successfully');
+            setEditingDepartment(null);
+            setDepartmentInput('');
+            fetchUsers();
+        } catch (err: any) {
+            setError(err.message);
+        }
+    };
+
+    const handleUpdateJoiningDate = async (userId: number) => {
+        try {
+            const response = await fetch(`${API_URL}/salary/joining-date/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ joining_date: joiningDateInput || null })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to update joining date');
+            }
+
+            setSuccess('Joining date updated successfully');
+            setEditingJoiningDate(null);
+            setJoiningDateInput('');
+            fetchUsers();
+        } catch (err: any) {
+            setError(err.message);
+        }
+    };
+
+    const formatDate = (dateString: string | null | undefined) => {
+        if (!dateString) return '-';
+        return new Date(dateString).toLocaleDateString('en-IN');
     };
 
     return (
@@ -252,6 +350,8 @@ const UserManagement: React.FC<UserManagementProps> = ({ token, onClose }) => {
                                         <th>Username</th>
                                         <th>Email</th>
                                         <th>Department</th>
+                                        <th>Joining Date</th>
+                                        <th>Telegram ID</th>
                                         <th>Role</th>
                                         <th>Status</th>
                                         <th>Actions</th>
@@ -264,7 +364,199 @@ const UserManagement: React.FC<UserManagementProps> = ({ token, onClose }) => {
                                             <td>{user.fullName}</td>
                                             <td>{user.username}</td>
                                             <td>{user.email}</td>
-                                            <td>{user.department || '-'}</td>
+                                            <td>
+                                                {editingDepartment === user.id ? (
+                                                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                                        <select
+                                                            value={departmentInput}
+                                                            onChange={(e) => setDepartmentInput(e.target.value)}
+                                                            style={{
+                                                                width: '140px',
+                                                                padding: '6px',
+                                                                fontSize: '11px',
+                                                                fontFamily: 'Press Start 2P, monospace',
+                                                                background: 'var(--bg-primary)',
+                                                                border: '2px solid var(--border)',
+                                                                color: 'var(--text-primary)',
+                                                                cursor: 'pointer'
+                                                            }}
+                                                        >
+                                                            <option value="">- None -</option>
+                                                            <option value="Software">Software</option>
+                                                            <option value="Data">Data</option>
+                                                            <option value="Calibration">Calibration</option>
+                                                        </select>
+                                                        <button
+                                                            onClick={() => handleUpdateDepartment(user.id)}
+                                                            style={{
+                                                                padding: '6px 10px',
+                                                                fontSize: '11px',
+                                                                background: 'var(--success-green)',
+                                                                color: 'white',
+                                                                border: '2px solid var(--border)',
+                                                                cursor: 'pointer',
+                                                                fontFamily: 'Press Start 2P, monospace',
+                                                                boxShadow: '0 2px 0 var(--border)'
+                                                            }}
+                                                        >
+                                                            ✔
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { setEditingDepartment(null); setDepartmentInput(''); }}
+                                                            style={{
+                                                                padding: '6px 10px',
+                                                                fontSize: '11px',
+                                                                background: '#ff6b6b',
+                                                                color: 'white',
+                                                                border: '2px solid var(--border)',
+                                                                cursor: 'pointer',
+                                                                fontFamily: 'Press Start 2P, monospace',
+                                                                boxShadow: '0 2px 0 var(--border)'
+                                                            }}
+                                                        >
+                                                            ✖
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                                        <span style={{
+                                                            fontFamily: 'Courier New, monospace',
+                                                            fontSize: '12px',
+                                                            color: user.department ? 'var(--text-primary)' : 'var(--text-muted)'
+                                                        }}>
+                                                            {user.department || '-'}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => { setEditingDepartment(user.id); setDepartmentInput(user.department || ''); }}
+                                                            style={{
+                                                                padding: '4px 8px',
+                                                                fontSize: '10px',
+                                                                background: '#FF9800',
+                                                                color: 'white',
+                                                                border: '2px solid var(--border)',
+                                                                cursor: 'pointer',
+                                                                fontFamily: 'Press Start 2P, monospace',
+                                                                boxShadow: '0 2px 0 var(--border)'
+                                                            }}
+                                                            title="Edit Department"
+                                                        >
+                                                            ✏️
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td>
+                                                {editingJoiningDate === user.id ? (
+                                                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                                        <input
+                                                            type="date"
+                                                            value={joiningDateInput}
+                                                            onChange={(e) => setJoiningDateInput(e.target.value)}
+                                                            style={{
+                                                                width: '130px',
+                                                                padding: '6px',
+                                                                fontSize: '11px',
+                                                                fontFamily: 'Courier New, monospace',
+                                                                background: 'var(--bg-primary)',
+                                                                border: '2px solid var(--border)',
+                                                                color: 'var(--text-primary)'
+                                                            }}
+                                                        />
+                                                        <button
+                                                            onClick={() => handleUpdateJoiningDate(user.id)}
+                                                            style={{
+                                                                padding: '6px 10px',
+                                                                fontSize: '11px',
+                                                                background: 'var(--success-green)',
+                                                                color: 'white',
+                                                                border: '2px solid var(--border)',
+                                                                cursor: 'pointer',
+                                                                fontFamily: 'Press Start 2P, monospace',
+                                                                boxShadow: '0 2px 0 var(--border)'
+                                                            }}
+                                                        >
+                                                            ✔
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { setEditingJoiningDate(null); setJoiningDateInput(''); }}
+                                                            style={{
+                                                                padding: '6px 10px',
+                                                                fontSize: '11px',
+                                                                background: '#ff6b6b',
+                                                                color: 'white',
+                                                                border: '2px solid var(--border)',
+                                                                cursor: 'pointer',
+                                                                fontFamily: 'Press Start 2P, monospace',
+                                                                boxShadow: '0 2px 0 var(--border)'
+                                                            }}
+                                                        >
+                                                            ✖
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                                        <span style={{
+                                                            fontFamily: 'Courier New, monospace',
+                                                            fontSize: '12px',
+                                                            color: user.joiningDate ? 'var(--text-primary)' : 'var(--text-muted)'
+                                                        }}>
+                                                            {formatDate(user.joiningDate)}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => { setEditingJoiningDate(user.id); setJoiningDateInput(user.joiningDate?.split('T')[0] || ''); }}
+                                                            style={{
+                                                                padding: '4px 8px',
+                                                                fontSize: '10px',
+                                                                background: '#9C27B0',
+                                                                color: 'white',
+                                                                border: '2px solid var(--border)',
+                                                                cursor: 'pointer',
+                                                                fontFamily: 'Press Start 2P, monospace',
+                                                                boxShadow: '0 2px 0 var(--border)'
+                                                            }}
+                                                            title="Edit Joining Date"
+                                                        >
+                                                            📅
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td>
+                                                {editingTelegramId === user.id ? (
+                                                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                                        <input
+                                                            type="text"
+                                                            value={telegramIdInput}
+                                                            onChange={(e) => setTelegramIdInput(e.target.value)}
+                                                            placeholder="Telegram ID"
+                                                            style={{ width: '120px', padding: '4px', fontSize: '11px' }}
+                                                        />
+                                                        <button
+                                                            onClick={() => handleUpdateTelegramId(user.id)}
+                                                            style={{ padding: '4px 8px', fontSize: '10px', background: '#4CAF50', color: 'white', border: 'none', cursor: 'pointer' }}
+                                                        >
+                                                            ✔
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { setEditingTelegramId(null); setTelegramIdInput(''); }}
+                                                            style={{ padding: '4px 8px', fontSize: '10px', background: '#f44336', color: 'white', border: 'none', cursor: 'pointer' }}
+                                                        >
+                                                            ✖
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                                        <span>{user.telegramId || '-'}</span>
+                                                        <button
+                                                            onClick={() => { setEditingTelegramId(user.id); setTelegramIdInput(user.telegramId?.toString() || ''); }}
+                                                            style={{ padding: '2px 6px', fontSize: '10px', background: '#FF9800', color: 'white', border: 'none', cursor: 'pointer' }}
+                                                            title="Edit Telegram ID"
+                                                        >
+                                                            ✏️
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </td>
                                             <td>
                                                 <span className={`role-badge role-${user.role}`}>
                                                     {user.role.toUpperCase()}

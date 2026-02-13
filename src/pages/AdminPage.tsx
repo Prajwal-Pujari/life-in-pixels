@@ -5,6 +5,8 @@ import UserManagement from '../components/UserManagement';
 import HolidayManagement from '../components/HolidayManagement';
 import UserApproval from '../components/UserApproval';
 import ExportCenter from '../components/ExportCenter';
+import CalibrationApprovalPanel from '../components/CalibrationApprovalPanel';
+import SalaryManagement from '../components/SalaryManagement';
 
 interface AdminPageProps {
     token: string;
@@ -17,6 +19,8 @@ const AdminPage: React.FC<AdminPageProps> = ({ token, user, onLogout }) => {
     const [showHolidayManagement, setShowHolidayManagement] = useState(false);
     const [showUserApproval, setShowUserApproval] = useState(false);
     const [showExportCenter, setShowExportCenter] = useState(false);
+    const [showCalibrationApproval, setShowCalibrationApproval] = useState(false);
+    const [showSalaryManagement, setShowSalaryManagement] = useState(false);
     const [viewingUserId, setViewingUserId] = useState<number | null>(null);
     const [sendingTelegram, setSendingTelegram] = useState(false);
     const [telegramMessage, setTelegramMessage] = useState('');
@@ -107,6 +111,20 @@ const AdminPage: React.FC<AdminPageProps> = ({ token, user, onLogout }) => {
                         <span className="btn-emoji">📊</span>
                         EXPORT DATA
                     </button>
+                    <button
+                        className="btn-admin-dashboard"
+                        onClick={() => setShowCalibrationApproval(true)}
+                    >
+                        <span className="btn-emoji">🔧</span>
+                        CALIBRATION EXPENSES
+                    </button>
+                    <button
+                        className="btn-admin-dashboard"
+                        onClick={() => setShowSalaryManagement(true)}
+                    >
+                        <span className="btn-emoji">💰</span>
+                        SALARY MANAGEMENT
+                    </button>
                     <button className="btn-logout" onClick={onLogout}>
                         LOGOUT
                     </button>
@@ -154,6 +172,22 @@ const AdminPage: React.FC<AdminPageProps> = ({ token, user, onLogout }) => {
                 <ExportCenter
                     token={token}
                     onClose={() => setShowExportCenter(false)}
+                />
+            )}
+
+            {showCalibrationApproval && (
+                <div className="modal-overlay" onClick={() => setShowCalibrationApproval(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button className="modal-close" onClick={() => setShowCalibrationApproval(false)}>✕</button>
+                        <CalibrationApprovalPanel />
+                    </div>
+                </div>
+            )}
+
+            {showSalaryManagement && (
+                <SalaryManagement
+                    token={token}
+                    onClose={() => setShowSalaryManagement(false)}
                 />
             )}
         </div>

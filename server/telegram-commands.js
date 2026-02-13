@@ -1,46 +1,115 @@
 // Interactive Telegram Bot Commands
 import { bot } from './telegram-bot.js';
+import {
+    showExportMenu,
+    exportToday,
+    exportWeek,
+    exportMonth,
+    handleCallbackQuery as handleExportCallback
+} from './telegram-export-handlers.js';
+import { generateIndividualReport } from './exports/individual-report.js';
+import { generateBulkReport } from './exports/bulk-report.js';
+import { generateMonthlySummary } from './exports/monthly-summary.js';
+// User commands (verification, check-in/out, expenses, leave)
+import {
+    setUserCommandsDbPool,
+    handleVerifyCommand,
+    handleCodeCommand,
+    handleCheckinCommand,
+    handleCheckoutCommand,
+    handleMyStatusCommand,
+    handleExpenseCommand,
+    handleExpensesCommand,
+    handleSubmitCommand,
+    handleLeaveCommand,
+    handleMyLeavesCommand,
+    handleUserHelpCommand
+} from './telegram-user-commands.js';
 
 let dbPool = null;
 
+// User state management for multi-step flows
+const userStates = new Map();
+
 // Initialize with database pool
-export function initializeTelegramCommands(pool) {
+export async function initializeTelegramCommands(pool) {
     dbPool = pool;
+    // Also set dbPool for export handlers (synchronously)
+    const exportHandlers = await import('./telegram-export-handlers.js');
+    if (exportHandlers.setDbPool) {
+        exportHandlers.setDbPool(pool);
+        console.log('✅ Database pool set for export handlers');
+    }
+    // Set dbPool for user commands
+    setUserCommandsDbPool(pool);
+    console.log('✅ Database pool set for user commands');
 }
 
 // Set up command handlers
 export function setupCommandHandlers(botInstance) {
     if (!botInstance) return;
 
+    // Remove all existing listeners to prevent duplicates on hot reload
+    botInstance.removeAllListeners();
+
     // /start command
     botInstance.onText(/\/start/, (msg) => {
         const chatId = msg.chat.id;
+        console.log(`📱 Received /start command from user ${msg.from.id} (${msg.from.username || msg.from.first_name})`);
         const welcomeMessage = `
 🎯 <b>Life In Pixels - Work Tracker Bot</b>
 
-Available Commands:
-━━━━━━━━━━━━━━━━━━
-📊 /summary or /today - Today's attendance summary
-👥 /present - List of present employees
-🏠 /wfh - Work from home employees
-📈 /stats - Quick statistics
-ℹ️ /help - Show this help message
+<b>🔐 First Time? Link Your Account:</b>
+/verify [email] - Verify with your work email
 
-You can also just type:
-• "summary" - Get today's summary
-• "stats" - Get quick stats
-• "present" - See who's present
+<b>⏰ Attendance:</b>
+/checkin - Mark entry time
+/checkout - Mark exit time
+/mystatus - View today's status
+
+<b>💰 Expenses (Calibration):</b>
+/expense Type - Amount - Add expense
+/expenses - View today's expenses
+/submit - Submit for approval
+
+<b>🌴 Leave:</b>
+/leave START END Reason - Request leave
+/myleaves - Check leave status
+
+<b>📊 Reports:</b>
+/summary - Today's attendance
+/present - Present employees
+/export - Excel reports (Admin)
+
+/help - Show detailed help
 
 <i>Powered by Life In Pixels</i>
         `;
         botInstance.sendMessage(chatId, welcomeMessage, { parse_mode: 'HTML' });
     });
 
-    // /help command
-    botInstance.onText(/\/help/, (msg) => {
-        const chatId = msg.chat.id;
-        botInstance.sendMessage(chatId, 'Type /start to see available commands', { parse_mode: 'HTML' });
-    });
+    // /help command - Now shows personalized help
+    botInstance.onText(/\/help/, (msg) => handleUserHelpCommand(msg, botInstance));
+
+    // ==================== USER COMMANDS ====================
+
+    // Email verification commands
+    botInstance.onText(/\/verify/, (msg) => handleVerifyCommand(msg, botInstance));
+    botInstance.onText(/\/code/, (msg) => handleCodeCommand(msg, botInstance));
+
+    // Attendance commands
+    botInstance.onText(/\/checkin/, (msg) => handleCheckinCommand(msg, botInstance));
+    botInstance.onText(/\/checkout/, (msg) => handleCheckoutCommand(msg, botInstance));
+    botInstance.onText(/\/mystatus/, (msg) => handleMyStatusCommand(msg, botInstance));
+
+    // Expense commands (Calibration only)
+    botInstance.onText(/\/expense(?!s)/, (msg) => handleExpenseCommand(msg, botInstance));
+    botInstance.onText(/\/expenses/, (msg) => handleExpensesCommand(msg, botInstance));
+    botInstance.onText(/\/submit/, (msg) => handleSubmitCommand(msg, botInstance));
+
+    // Leave request commands
+    botInstance.onText(/\/leave/, (msg) => handleLeaveCommand(msg, botInstance));
+    botInstance.onText(/\/myleaves/, (msg) => handleMyLeavesCommand(msg, botInstance));
 
     // /summary or /today command
     botInstance.onText(/\/(summary|today)/, async (msg) => {
@@ -71,6 +140,7 @@ You can also just type:
         if (msg.text && !msg.text.startsWith('/')) {
             const chatId = msg.chat.id;
             const text = msg.text.toLowerCase().trim();
+            console.log(`📱 Received plain text from user ${msg.from.id}: "${text}"`);
 
             if (text === 'summary' || text === 'today') {
                 await sendQuickSummary(chatId, botInstance);
@@ -81,6 +151,46 @@ You can also just type:
             } else if (text === 'stats') {
                 await sendQuickStats(chatId, botInstance);
             }
+        }
+    });
+
+    // /export command - Main export menu
+    botInstance.onText(/\/export$/, async (msg) => {
+        const chatId = msg.chat.id;
+        console.log(`📱 Received /export command from user ${msg.from.id} (${msg.from.username || msg.from.first_name})`);
+        await showExportMenu(chatId, botInstance, msg.from.id);
+    });
+
+    // Quick export commands
+    botInstance.onText(/\/export_today/, async (msg) => {
+        const chatId = msg.chat.id;
+        await exportToday(chatId, botInstance, msg.from.id);
+    });
+
+    botInstance.onText(/\/export_week/, async (msg) => {
+        const chatId = msg.chat.id;
+        await exportWeek(chatId, botInstance, msg.from.id);
+    });
+
+    botInstance.onText(/\/export_month/, async (msg) => {
+        const chatId = msg.chat.id;
+        await exportMonth(chatId, botInstance, msg.from.id);
+    });
+
+    // Handle callback queries (button clicks)
+    botInstance.on('callback_query', async (query) => {
+        const data = query.data;
+        console.log(`📱 Received callback query from user ${query.from.id}: data="${data}"`);
+
+        // Only handle export-related callbacks
+        if (data && (data.startsWith('export_') || data.startsWith('employee_') ||
+            data.startsWith('range_') || data.startsWith('month_'))) {
+            console.log(`✅ Processing export callback: ${data}`);
+            await handleExportCallback(query, botInstance);
+        } else {
+            console.log(`⚠️ Ignoring non-export callback: ${data}`);
+            // Acknowledge other callbacks but don't process them
+            botInstance.answerCallbackQuery(query.id);
         }
     });
 
